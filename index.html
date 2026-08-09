@@ -991,10 +991,11 @@
 
   // Kirim email berisi tautan reset password ke alamat email yang dituju.
   async function supabaseRecoverPassword(email){
-    const res = await fetch(`${SUPABASE_URL}/auth/v1/recover`, {
+    const redirectTo = encodeURIComponent('https://zurittaqi.github.io/SESAMA/');
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/recover?redirect_to=${redirectTo}`, {
       method: 'POST',
       headers: { 'Content-Type':'application/json', 'apikey': SUPABASE_ANON_KEY },
-      body: JSON.stringify({ email, redirect_to: 'https://zurittaqi.github.io/SESAMA/' })
+      body: JSON.stringify({ email })
     });
     if(!res.ok){
       let data = {}; try{ data = await res.json(); }catch(e){}
