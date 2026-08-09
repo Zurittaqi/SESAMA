@@ -994,7 +994,7 @@
     const res = await fetch(`${SUPABASE_URL}/auth/v1/recover`, {
       method: 'POST',
       headers: { 'Content-Type':'application/json', 'apikey': SUPABASE_ANON_KEY },
-      body: JSON.stringify({ email, redirect_to: window.location.origin + window.location.pathname })
+      body: JSON.stringify({ email, redirect_to: 'https://zurittaqi.github.io/SESAMA/' })
     });
     if(!res.ok){
       let data = {}; try{ data = await res.json(); }catch(e){}
