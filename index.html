@@ -2712,10 +2712,20 @@
   }
 
   // Backup ringkas setiap SESAMA dibuka/dinyalakan — nama file TETAP, menimpa backup "saat dibuka" sebelumnya.
-  // (Catatan: penimpaan file benar-benar terjadi kalau folder backup sudah dipilih lewat File System Access API.
-  // Kalau belum pilih folder, browser mengunduh ke folder Download dan sebagian browser bisa menambahkan
-  // "(1)" pada nama file duplikat alih-alih menimpa — ini keterbatasan bawaan browser, bukan dari SESAMA.)
+  // Dibatasi maksimal 1x per hari (walau dibuka/refresh berkali-kali) supaya folder Download tidak
+  // kebanjiran file duplikat. Tombol "Coba Backup Sekarang" di Kelola Pengguna tetap bisa dipakai kapan saja
+  // tanpa batasan ini, untuk backup manual sewaktu-waktu.
+  const KUNCI_TANGGAL_BACKUP_DIBUKA = 'sesama_backup_saat_dibuka_tanggal';
   function jalankanBackupSaatDibuka(){
+    const hariIni = new Date().toISOString().slice(0,10); // yyyy-mm-dd
+    try{
+      if(localStorage.getItem(KUNCI_TANGGAL_BACKUP_DIBUKA) === hariIni){
+        return; // sudah backup hari ini, tidak perlu diulang tiap refresh
+      }
+      localStorage.setItem(KUNCI_TANGGAL_BACKUP_DIBUKA, hariIni);
+    }catch(err){
+      // localStorage tidak tersedia (mis. mode privat/preview terbatas) — tetap jalankan backup seperti biasa
+    }
     jalankanBackupOtomatis('backup-sesama-saat-dibuka.json');
   }
 
