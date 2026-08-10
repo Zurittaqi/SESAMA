@@ -14,7 +14,7 @@
     --forest-900:#122E28; --forest-800:#173B33; --forest-700:#255449;
     --forest-500:#4C7B6C; --forest-300:#8FB3A4;
     --sand-50:#FBF8F0; --sand-100:#F3EEDE; --sand-200:#E8DFC6; --sand-300:#D9CBA3;
-    --brass-500:#B08655; --brass-600:#96693D;
+    --brass-500:#B08655; --brass-600:#5E4225;
     --ink-900:#20241F; --ink-600:#565C52;
     --stamp-green:#2E6B4C; --stamp-green-bg:#DEEBE1;
     --stamp-red:#A13F30; --stamp-red-bg:#F3DFD9;
@@ -566,8 +566,8 @@
 
 
   <div class="action-row" id="actionRow">
-    <button class="btn-action" id="btnBukuTabungan">
-      <span class="ic buku">🔍</span><span class="btn-label">Cek Buku Tabungan</span>
+    <button class="btn-action" id="btnBukuTabungan" style="min-width:max-content; flex-shrink:0;">
+      <span class="ic buku">🔘</span><span class="btn-label">Cek Buku Tabungan</span>
     </button>
     <button class="btn-action" id="btnVerifikasi" style="display:none;">
       <span class="ic user">🧾</span><span class="btn-label">Verifikasi Pendaftaran</span><span class="badge-count" id="badgePending" style="display:none;">0</span>
@@ -695,7 +695,7 @@
           <label>Harga per Kg</label>
           <div class="harga-display">
             <span class="amt" id="fHargaTampil">Pilih jenis…</span>
-            <span class="lock">🔒 dari Manajer</span>
+            <span class="lock">🔒</span>
           </div>
           <span class="hint">Otomatis mengikuti daftar harga yang berlaku.</span>
         </div>
@@ -780,8 +780,8 @@
       </div>
     </div>
     <div class="modal-foot">
-      <button class="btn-mini cancel" data-close="modalBuku">Tutup</button>
-      <button class="btn-mini confirm" id="btnUnduhBukuPdf" style="display:none;">📄 Unduh PDF Buku Tabungan Nasabah Ini</button>
+      <button class="btn-mini confirm" id="btnUnduhBukuPdf" style="display:none;">📄 Unduh Buku Tabungan</button>
+      <button class="btn-mini cancel" data-close="modalBuku" style="margin-left:14px;">Tutup</button>
     </div>
   </div>
 </div>
@@ -1111,7 +1111,11 @@
   function setRole(role){
     currentRole = role;
     const namaTampil = currentUser ? currentUser.nama : '';
-    $('roleNote').textContent = namaTampil ? `${namaTampil} — ${roleInfo[role].note}` : roleInfo[role].note;
+    if(role === 'superadmin'){
+      $('roleNote').textContent = 'MANAJER';
+    } else {
+      $('roleNote').textContent = namaTampil ? `${namaTampil} — ${roleInfo[role].note}` : roleInfo[role].note;
+    }
 
     const isStaff = (role==='admin'||role==='superadmin');
     const isSuperAdmin = (role==='superadmin');
