@@ -302,11 +302,12 @@
   .price-table td{padding:8px 10px; border-bottom:1px solid var(--line); font-size:13.5px;}
   .price-table input[type=text]{width:120px; padding:7px 9px; border-radius:7px; border:1.5px solid var(--line); font-family:'JetBrains Mono',monospace; font-size:13px;}
   .price-table.compact th, .price-table.compact td{padding:5px 6px; font-size:12px;}
-  #nasabahTable th:nth-child(1), #nasabahTable td:nth-child(1){width:24%;}
-  #nasabahTable th:nth-child(2), #nasabahTable td:nth-child(2){width:16%;}
-  #nasabahTable th:nth-child(3), #nasabahTable td:nth-child(3){width:12%;}
-  #nasabahTable th:nth-child(4), #nasabahTable td:nth-child(4){width:22%;}
-  #nasabahTable th:nth-child(5), #nasabahTable td:nth-child(5){width:1%; white-space:nowrap; text-align:right;}
+  #nasabahTable th:nth-child(1), #nasabahTable td:nth-child(1){width:20%;}
+  #nasabahTable th:nth-child(2), #nasabahTable td:nth-child(2){width:13%;}
+  #nasabahTable th:nth-child(3), #nasabahTable td:nth-child(3){width:10%;}
+  #nasabahTable th:nth-child(4), #nasabahTable td:nth-child(4){width:18%;}
+  #nasabahTable th:nth-child(5), #nasabahTable td:nth-child(5){width:14%;}
+  #nasabahTable th:nth-child(6), #nasabahTable td:nth-child(6){width:1%; white-space:nowrap; text-align:right;}
   #adminTable th:nth-child(1), #adminTable td:nth-child(1){width:22%;}
   #adminTable th:nth-child(2), #adminTable td:nth-child(2){width:28%;}
   #adminTable th:nth-child(3), #adminTable td:nth-child(3){width:14%;}
@@ -479,11 +480,12 @@
     </div>
 
     <div class="login-tabs">
-      <button class="login-tab active" data-tab="staf">Login Staf</button>
-      <button class="login-tab" data-tab="nasabah">Nasabah / Pengunjung</button>
+      <button class="login-tab active" data-tab="nasabah">Login Nasabah</button>
+      <button class="login-tab" data-tab="staf">Login Staf</button>
+      <button class="login-tab" data-tab="daftar">Daftar</button>
     </div>
 
-    <div class="login-panel" id="panelStaf">
+    <div class="login-panel" id="panelStaf" style="display:none;">
       <div class="field">
         <label for="loginEmail">Email</label>
         <input type="email" id="loginEmail" autocomplete="username" placeholder="nama@email.com">
@@ -497,45 +499,93 @@
       <p class="login-hint" id="loginLoadingHint" style="display:none;">Memeriksa akun...</p>
     </div>
 
-    <div class="login-panel" id="panelNasabah" style="display:none;">
-      <div class="nasabah-subtabs">
-        <button class="subtab active" data-sub="daftar">Daftar Akun Baru</button>
-        <button class="subtab" data-sub="masuk">Buka Tanpa Login</button>
+    <div class="login-panel" id="panelNasabah">
+      <p class="login-hint" style="margin-bottom:14px;">Masuk menggunakan nama akun dan PIN Anda. Hubungi Admin jika belum punya akun atau lupa PIN.</p>
+      <div class="field">
+        <label for="nasabahNama">Nama Akun</label>
+        <input type="text" id="nasabahNama" placeholder="cth. Siti Aminah" autocomplete="username">
       </div>
+      <div class="field">
+        <label for="nasabahPin">PIN</label>
+        <input type="password" id="nasabahPin" autocomplete="current-password" placeholder="PIN dari Admin">
+      </div>
+      <p class="login-error" id="nasabahLoginError" style="display:none;"></p>
+      <button class="btn-primary-login" id="btnLoginNasabah">Masuk</button>
+      <p class="login-hint" id="nasabahLoginLoadingHint" style="display:none;">Memeriksa akun nasabah...</p>
+    </div>
 
-      <div id="subDaftar">
-        <div class="field">
-          <label for="regNama">Nama Lengkap</label>
-          <input type="text" id="regNama" placeholder="cth. Wulan Sari">
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label for="regRT">RT <span class="req">*wajib</span></label>
-            <input type="text" id="regRT" placeholder="cth. 03" inputmode="numeric">
-          </div>
-          <div class="field">
-            <label for="regRW">RW <span class="req">*wajib</span></label>
-            <input type="text" id="regRW" placeholder="cth. 05" inputmode="numeric">
-          </div>
-        </div>
-        <div class="field">
-          <label for="regAlamat">Alamat / Blok <span class="opt">(opsional)</span></label>
-          <input type="text" id="regAlamat" list="listAlamat" placeholder="Pilih atau ketik, cth. PS 2B" autocomplete="off">
-        </div>
-        <div class="field">
-          <label for="regKontak">No. HP / Email <span class="opt">(opsional)</span></label>
-          <input type="text" id="regKontak" placeholder="cth. 0812xxxxxxxx atau nama@email.com">
-        </div>
-        <p class="login-error" id="regError" style="display:none;"></p>
-        <p class="login-success" id="regSuccess" style="display:none;"></p>
-        <button class="btn-primary-login" id="btnDaftarNasabah">Kirim Pendaftaran</button>
-        <p class="login-hint">Pendaftaran akan diverifikasi oleh Admin sebelum akun aktif dan tercatat sebagai nasabah resmi.</p>
+    <div class="login-panel" id="panelDaftar" style="display:none;">
+      <p class="login-hint" style="margin-bottom:14px;">Belum jadi nasabah? Isi data di bawah ini. Setelah diverifikasi oleh Admin, nomor rekening & PIN Anda akan dibagikan oleh petugas.</p>
+      <div class="field">
+        <label for="daftarNama">Nama Lengkap</label>
+        <input type="text" id="daftarNama" placeholder="cth. Siti Aminah" autocomplete="name">
       </div>
-
-      <div id="subMasuk" style="display:none;">
-        <p class="login-hint" style="margin-bottom:14px;">Buka aplikasi tanpa login untuk melihat rekap publik dan mengecek buku tabungan nasabah yang sudah terverifikasi — tanpa perlu akun atau kata sandi.</p>
-        <button class="btn-primary-login" id="btnMasukPengunjung">Buka Tanpa Login</button>
+      <div class="field" style="display:flex; gap:10px;">
+        <div style="flex:1;">
+          <label for="daftarRt">RT</label>
+          <input type="text" id="daftarRt" placeholder="cth. 02" inputmode="numeric">
+        </div>
+        <div style="flex:1;">
+          <label for="daftarRw">RW</label>
+          <input type="text" id="daftarRw" list="daftarRwOptions" placeholder="cth. 16" inputmode="numeric" autocomplete="off">
+          <datalist id="daftarRwOptions">
+            <option value="01">
+            <option value="02">
+            <option value="03">
+            <option value="04">
+            <option value="05">
+            <option value="06">
+            <option value="07">
+            <option value="08">
+            <option value="09">
+            <option value="10">
+            <option value="11">
+            <option value="12">
+            <option value="13">
+            <option value="14">
+            <option value="15">
+            <option value="16">
+            <option value="17">
+          </datalist>
+        </div>
       </div>
+      <div class="field">
+        <label for="daftarAlamat">Blok / Kompleks (opsional)</label>
+        <select id="daftarAlamat">
+          <option value="">-- Pilih blok / kompleks --</option>
+          <option value="PS 4A">PS 4A</option>
+          <option value="PS 4B">PS 4B</option>
+          <option value="PS 4C">PS 4C</option>
+          <option value="PS 3A">PS 3A</option>
+          <option value="PS 3B">PS 3B</option>
+          <option value="PS 3C">PS 3C</option>
+          <option value="PS 2A">PS 2A</option>
+          <option value="PS 2B">PS 2B</option>
+          <option value="PS 2C">PS 2C</option>
+          <option value="PS 1A">PS 1A</option>
+          <option value="PS 1B">PS 1B</option>
+          <option value="PS 1C">PS 1C</option>
+          <option value="PURI UTAMA">PURI UTAMA</option>
+          <option value="PURI RAYA">PURI RAYA</option>
+          <option value="PU 1A">PU 1A</option>
+          <option value="PU 1B">PU 1B</option>
+          <option value="PU 1C">PU 1C</option>
+          <option value="PU 2A">PU 2A</option>
+          <option value="PU 2B">PU 2B</option>
+          <option value="PU 2C">PU 2C</option>
+          <option value="PU 3A">PU 3A</option>
+          <option value="PU 3B">PU 3B</option>
+          <option value="PU 3C">PU 3C</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="daftarKontak">No. HP / Kontak (opsional)</label>
+        <input type="text" id="daftarKontak" placeholder="cth. 0812-xxxx-xxxx" autocomplete="tel">
+      </div>
+      <p class="login-error" id="daftarError" style="display:none;"></p>
+      <p class="login-success" id="daftarSuccess" style="display:none;"></p>
+      <button class="btn-primary-login" id="btnDaftarNasabah">Daftar</button>
+      <p class="login-hint" id="daftarLoadingHint" style="display:none;">Mengirim pendaftaran...</p>
     </div>
   </div>
 </div>
@@ -632,7 +682,7 @@
     <button class="btn-mini cancel" id="btnResetFilter" type="button">Reset Filter</button>
   </div>
 
-  <div class="ledger-section">
+  <div class="ledger-section" id="ledgerSection">
     <div class="ledger-head">
       <h3>Buku Besar Transaksi</h3>
       <span class="count" id="ledgerCount">0 catatan</span>
@@ -782,6 +832,7 @@
       </div>
     </div>
     <div class="modal-foot">
+      <button class="btn-mini cancel" id="btnUbahPin" style="display:none; margin-right:auto;">🔑 Ubah PIN</button>
       <button class="btn-mini confirm" id="btnUnduhBukuPdf" style="display:none;">📄 Unduh Buku Tabungan</button>
       <button class="btn-mini cancel" data-close="modalBuku" style="margin-left:14px;">Tutup</button>
     </div>
@@ -798,10 +849,10 @@
     <div class="modal-body">
 
       <h4 style="margin:0 0 4px; font-size:14px; color:var(--forest-900);">Nasabah</h4>
-      <p class="hint" style="margin:0 0 10px;">Input offline oleh Super Admin berdasarkan surat pengantar RT — langsung aktif tanpa antre verifikasi.</p>
+      <p class="hint" style="margin:0 0 10px;">Input nasabah oleh Super Admin. Setelah ditambahkan, gunakan tombol <strong>Buat Akun</strong> di kolom "Akun Login" untuk membuatkan akun login nasabah dengan PIN awal.</p>
       <div class="table-scroll" style="padding:0;">
         <table class="price-table compact" id="nasabahTable">
-          <thead><tr><th>Nama</th><th>No. Rek</th><th>RT/RW</th><th>Alamat</th><th></th></tr></thead>
+          <thead><tr><th>Nama</th><th>No. Rek</th><th>RT/RW</th><th>Alamat</th><th>Akun Login</th><th></th></tr></thead>
           <tbody id="nasabahTableBody"></tbody>
         </table>
       </div>
@@ -880,21 +931,21 @@
 <div class="modal-overlay" id="modalGantiPassword">
   <div class="modal-panel" style="max-width:420px;">
     <div class="modal-head">
-      <h3>🔑 Ganti Password</h3>
+      <h3 id="gpTitle">🔑 Ganti Password</h3>
       <button class="modal-close" data-close="modalGantiPassword">✕</button>
     </div>
     <div class="modal-body">
       <div class="field" style="margin-bottom:14px;">
-        <label for="gpPasswordBaru">Password Baru</label>
+        <label for="gpPasswordBaru" id="gpLabelBaru">Password Baru</label>
         <input type="password" id="gpPasswordBaru" autocomplete="new-password">
       </div>
       <div class="field">
-        <label for="gpPasswordKonfirmasi">Ulangi Password Baru</label>
+        <label for="gpPasswordKonfirmasi" id="gpLabelKonfirmasi">Ulangi Password Baru</label>
         <input type="password" id="gpPasswordKonfirmasi" autocomplete="new-password">
       </div>
       <p class="login-error" id="gpError" style="display:none; margin-top:14px;"></p>
       <p class="login-success" id="gpSuccess" style="display:none; margin-top:14px;"></p>
-      <p class="hint" style="margin-top:10px;">Minimal 6 karakter. Anda akan tetap login setelah ini, tidak perlu masuk ulang.</p>
+      <p class="hint" id="gpHint" style="margin-top:10px;">Minimal 6 karakter. Anda akan tetap login setelah ini, tidak perlu masuk ulang.</p>
     </div>
     <div class="modal-foot">
       <button class="btn-mini cancel" data-close="modalGantiPassword">Batal</button>
@@ -946,6 +997,7 @@
   }
 
   let timerRefreshSesi = null;
+  const KUNCI_SESI_TERSIMPAN = 'sesama_sesi';
   function simpanSesi(auth){
     session = {
       access_token: auth.access_token,
@@ -953,7 +1005,13 @@
       user_id: auth.user.id,
       email: auth.user.email
     };
+    try{
+      localStorage.setItem(KUNCI_SESI_TERSIMPAN, JSON.stringify({ refresh_token: session.refresh_token }));
+    }catch(e){ /* localStorage tidak tersedia (mis. mode privat) — sesi tetap jalan, hanya tidak persist */ }
     jadwalkanRefreshSesi(auth.expires_in || 3600);
+  }
+  function hapusSesiTersimpan(){
+    try{ localStorage.removeItem(KUNCI_SESI_TERSIMPAN); }catch(e){ /* abaikan */ }
   }
   function jadwalkanRefreshSesi(expiresInDetik){
     if(timerRefreshSesi) clearTimeout(timerRefreshSesi);
@@ -1007,7 +1065,7 @@
 
   // Ambil 1 baris dari tabel `profiles` untuk tahu nama & peran user yang login
   async function supabaseGetProfile(userId, accessToken){
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=nama,role,must_change_password`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=nama,role,must_change_password,nasabah_id`, {
       headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${accessToken}` }
     });
     const rows = await res.json();
@@ -1069,6 +1127,7 @@
   let tipeAktif = 'setor';
   let selectedAkun = null;
   let currentRole = 'admin';
+  let backupOtomatisSudahDijadwalkan = false; // guard: backup otomatis (tengah malam & saat dibuka) hanya utk superadmin, hanya dijadwalkan sekali
   let confirmDeleteId = null;
   let editingId = null;
   let strukSementara = []; // transaksi baru yang direkam selama modal Tambah Transaksi ini terbuka, untuk dicetak jadi struk
@@ -1099,7 +1158,7 @@
 
   /* =================== ROLE / SESI =================== */
   const roleInfo = {
-    visitor:   {note:"Akses publik, hanya lihat"},
+    nasabah:   {note:"Nasabah"},
     admin:     {note:"Akses operator"},
     superadmin:{note:"Akses penuh Manajer"}
   };
@@ -1115,14 +1174,17 @@
     const namaTampil = currentUser ? currentUser.nama : '';
     if(role === 'superadmin'){
       $('roleNote').textContent = 'MANAJER';
+    } else if(role === 'nasabah'){
+      $('roleNote').textContent = namaTampil ? `${namaTampil} — Nasabah` : 'Nasabah';
     } else {
       $('roleNote').textContent = namaTampil ? `${namaTampil} — ${roleInfo[role].note}` : roleInfo[role].note;
     }
 
     const isStaff = (role==='admin'||role==='superadmin');
+    const isNasabah = (role==='nasabah');
     const isSuperAdmin = (role==='superadmin');
 
-    $('btnBukuTabungan').style.display = 'flex'; // semua peran boleh cek buku tabungan
+    $('btnBukuTabungan').style.display = isStaff ? 'flex' : 'none'; // nasabah langsung ke buku sendiri
     $('btnGantiPassword').style.display = isStaff ? 'inline-block' : 'none';
     $('btnVerifikasi').style.display = isStaff ? 'flex' : 'none';
     $('btnBukaTambah').style.display = isStaff ? 'flex' : 'none';
@@ -1134,10 +1196,21 @@
     $('btnKelolaPengguna').style.display = isSuperAdmin ? 'flex' : 'none';
     $('privacyNote').style.display = 'none';
     $('filterBar').style.display = isStaff ? 'flex' : 'none';
+    $('statsGrid').style.display = isNasabah ? 'none' : '';
+    if($('ledgerSection')) $('ledgerSection').style.display = isNasabah ? 'none' : '';
 
     updateBadgePending();
     renderStats();
     renderLedger();
+
+    // Backup otomatis (tengah malam & saat dibuka) HANYA untuk Super Admin.
+    // Sengaja dijadwalkan di sini (bukan di INIT global) supaya baru berjalan
+    // setelah role pengguna yang login benar-benar diketahui.
+    if(isSuperAdmin && !backupOtomatisSudahDijadwalkan){
+      backupOtomatisSudahDijadwalkan = true;
+      jadwalkanBackupTengahMalam();
+      jalankanBackupSaatDibuka();
+    }
   }
 
   /* =================== STATS =================== */
@@ -1197,44 +1270,27 @@
     const jenisDipakai = new Set(data.map(t=>t.jenis)).size;
 
     let html = '';
-    if(currentRole==='visitor'){
-      html = `
-        <div class="stat-card accent"><div class="lbl">Sampah Terkumpul</div><div class="val">${beratTotal.toLocaleString('id-ID')} kg</div></div>
-        <div class="stat-card"><div class="lbl">Nasabah Aktif</div><div class="val">${akunAktif}</div></div>
-        <div class="stat-card"><div class="lbl">Jumlah Transaksi</div><div class="val">${data.length}</div></div>
-        <div class="stat-card"><div class="lbl">Jenis Sampah Diterima</div><div class="val">${jenisDipakai} / ${Object.keys(priceList).length}</div></div>`;
-    } else {
-      html = `
-        <div class="stat-card accent"><div class="lbl">Saldo Bersih${adaFilterAktif()?' (Terfilter)':''}</div><div class="val">${rupiah(saldo)}</div></div>
-        <div class="stat-card"><div class="lbl">Total Setoran</div><div class="val pos">${rupiah(totalSetor)}</div></div>
-        <div class="stat-card"><div class="lbl">Total Penarikan</div><div class="val neg">${rupiah(totalTarik)}</div></div>
-        <div class="stat-card"><div class="lbl">Jumlah Transaksi</div><div class="val">${data.length}</div></div>`;
-    }
+    if(currentRole==='nasabah'){ $('statsGrid').innerHTML = ''; return; }
+    html = `
+      <div class="stat-card accent"><div class="lbl">Saldo Bersih${adaFilterAktif()?' (Terfilter)':''}</div><div class="val">${rupiah(saldo)}</div></div>
+      <div class="stat-card"><div class="lbl">Total Setoran</div><div class="val pos">${rupiah(totalSetor)}</div></div>
+      <div class="stat-card"><div class="lbl">Total Penarikan</div><div class="val neg">${rupiah(totalTarik)}</div></div>
+      <div class="stat-card"><div class="lbl">Jumlah Transaksi</div><div class="val">${data.length}</div></div>`;
     $('statsGrid').innerHTML = html;
   }
 
   /* =================== LEDGER TABLE =================== */
   function renderLedger(){
-    const isVisitor = currentRole==='visitor';
+    if(currentRole==='nasabah') return; // nasabah tidak lihat ledger global
     const isSuperAdmin = currentRole==='superadmin';
     const data = transaksiTampil();
-    $('ledgerHead').innerHTML = isVisitor
-      ? `<tr><th>No</th><th>Tanggal</th><th>Nasabah</th><th>Jenis</th><th>Berat</th><th>Tipe</th></tr>`
-      : `<tr><th>No</th><th>Tanggal</th><th>Jam</th><th>Nasabah</th><th>Jenis</th><th>Berat</th><th>Harga/Kg</th><th>Total</th><th>Tipe</th><th>Keterangan</th>${isSuperAdmin?'<th></th>':''}</tr>`;
+    $('ledgerHead').innerHTML = `<tr><th>No</th><th>Tanggal</th><th>Jam</th><th>Nasabah</th><th>Jenis</th><th>Berat</th><th>Harga/Kg</th><th>Total</th><th>Tipe</th><th>Keterangan</th>${isSuperAdmin?'<th></th>':''}</tr>`;
 
-    const colCount = isVisitor ? 6 : (isSuperAdmin ? 11 : 10);
+    const colCount = isSuperAdmin ? 11 : 10;
     if(data.length===0){
       $('ledgerBody').innerHTML = `<tr class="empty-row"><td colspan="${colCount}">${adaFilterAktif() ? 'Tidak ada transaksi yang cocok dengan filter.' : 'Belum ada transaksi tercatat.'}</td></tr>`;
     } else {
-      $('ledgerBody').innerHTML = data.map((t,i)=> isVisitor ? `
-        <tr>
-          <td class="num">${i+1}</td>
-          <td>${t.tanggal}</td>
-          <td>${escapeHtml(t.akun.nama)}</td>
-          <td><span class="badge-jenis">${escapeHtml(t.jenis)}</span></td>
-          <td class="num">${t.beratKg.toLocaleString('id-ID')} kg</td>
-          <td><span class="stamp ${t.tipe}">${t.tipe==='setor'?'Setor':'Tarik'}</span></td>
-        </tr>` : `
+      $('ledgerBody').innerHTML = data.map((t,i)=> `
         <tr>
           <td class="num">${i+1}</td>
           <td>${t.tanggal}</td>
@@ -1266,12 +1322,12 @@
 
     const totalSetor = data.filter(t=>t.tipe==='setor').reduce((s,t)=>s+t.total,0);
     const totalTarik = data.filter(t=>t.tipe==='tarik').reduce((s,t)=>s+t.total,0);
-    $('ledgerFoot').innerHTML = isVisitor ? '' : `
+    $('ledgerFoot').innerHTML = `
       <div class="foot-item"><div class="lbl">Total Setor</div><div class="val pos">${rupiah(totalSetor)}</div></div>
       <div class="foot-item"><div class="lbl">Total Tarik</div><div class="val neg">${rupiah(totalTarik)}</div></div>
       <div class="foot-item"><div class="lbl">Saldo Bersih</div><div class="val">${rupiah(totalSetor-totalTarik)}</div></div>`;
 
-    if(!isSuperAdmin) return; // admin & visitor tidak punya aksi edit/hapus
+    if(!isSuperAdmin) return; // hanya superadmin punya aksi edit/hapus
 
     document.querySelectorAll('[data-edit]').forEach(btn=>{
       btn.addEventListener('click', ()=>{
@@ -1310,7 +1366,18 @@
 
   /* =================== MODAL HELPERS =================== */
   function openModal(id){ $(id).classList.add('open'); }
-  function closeModal(id){ $(id).classList.remove('open'); }
+  function closeModal(id){
+    $(id).classList.remove('open');
+    // Nasabah: begitu modal Buku Tabungan ditutup, langsung kembali ke halaman login.
+    if(id === 'modalBuku' && currentRole === 'nasabah'){
+      lakukanLogout();
+      return;
+    }
+    // Nasabah: kalau modal Ubah PIN dibatalkan/ditutup, kembali ke modal Buku Tabungan (bukan layar kosong).
+    if(id === 'modalGantiPassword' && currentRole === 'nasabah' && $('modalGantiPassword').dataset.modePin === '1'){
+      openModal('modalBuku');
+    }
+  }
   document.querySelectorAll('[data-close]').forEach(el=>{
     el.addEventListener('click', ()=> closeModal(el.dataset.close));
   });
@@ -1610,7 +1677,13 @@
   async function loadNasabah(){
     try{
       const rows = await supabaseRest('nasabah?select=id,nama,rekening,rt,rw,kontak,alamat&order=nama.asc');
-      nasabahList = rows.map(r => ({ id:r.id, nama:r.nama, rek:r.rekening, rt:r.rt, rw:r.rw, kontak:r.kontak||'', alamat:r.alamat||'' }));
+      nasabahList = rows.map(r => ({ id:r.id, nama:r.nama, rek:r.rekening, rt:r.rt, rw:r.rw, kontak:r.kontak||'', alamat:r.alamat||'', hasLogin:false }));
+      // Cek nasabah mana yang sudah punya akun login
+      try{
+        const profRows = await supabaseRest('profiles?select=nasabah_id&role=eq.nasabah');
+        const loginIds = new Set(profRows.map(p=>String(p.nasabah_id)));
+        nasabahList.forEach(n=>{ if(loginIds.has(String(n.id))) n.hasLogin = true; });
+      }catch(_){ /* jika kolom nasabah_id belum ada, abaikan */ }
     }catch(err){
       alert('Gagal memuat data nasabah dari server: ' + err.message);
     }
@@ -1763,6 +1836,12 @@
         <td class="mono">${n.rek}</td>
         <td class="mono">${n.rt||'-'}/${n.rw||'-'}</td>
         <td>${escapeHtml(n.alamat)||'—'}</td>
+        <td>${n.hasLogin
+          ? `<span style="color:var(--stamp-green);font-weight:700;font-size:11px;">✔ Aktif</span>
+             <button class="btn-nopad confirm" data-reset-nasabah-pin="${n.id}" style="margin-left:6px;">Reset PIN</button>`
+          : `<span style="color:var(--ink-600);font-size:11px;">Belum ada</span>
+             <button class="btn-nopad confirm" data-buat-akun-nasabah="${n.id}" style="margin-left:6px;">Buat Akun</button>`
+        }</td>
         <td><button class="btn-nopad danger" data-del-nasabah="${n.id}">Hapus</button></td>
       </tr>`).join('');
     document.querySelectorAll('[data-del-nasabah]').forEach(btn=>{
@@ -1780,6 +1859,80 @@
         }
       });
     });
+
+    // Buat akun login nasabah (virtual email + PIN default)
+    document.querySelectorAll('[data-buat-akun-nasabah]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const id = btn.dataset.buatAkunNasabah;
+        const n = nasabahList.find(x=>String(x.id)===id);
+        if(!n) return;
+        const pinAwal = prompt(`Buat PIN untuk ${n.nama} (No. Rek: ${n.rek}).
+PIN minimal 6 digit angka (nasabah bisa minta reset ke Admin jika lupa):`, '123456');
+        if(pinAwal === null) return;
+        if(!/^\d{6,}$/.test(pinAwal)){ alert('PIN harus minimal 6 digit angka.'); return; }
+        btn.disabled = true;
+        try{
+          const virtualEmail = rekToEmail(n.rek);
+          const daftar = await supabaseSignUp(virtualEmail, pinAwal);
+          if(!daftar.user || !daftar.user.id){ throw new Error('Gagal membuat akun — tidak ada data user dikembalikan.'); }
+          await supabaseRest('profiles', {
+            method:'POST', headers:{'Prefer':'return=representation'},
+            body: JSON.stringify({ id:daftar.user.id, nama:n.nama, email:virtualEmail, role:'nasabah', nasabah_id:n.id, must_change_password:false })
+          });
+          n.hasLogin = true;
+          renderNasabahTable();
+          alert(`Akun nasabah berhasil dibuat!
+No. Rek: ${n.rek}
+PIN: ${pinAwal}
+
+Sampaikan PIN ini ke ${n.nama} untuk login.`);
+        }catch(err){
+          const sudahAda = /already registered|duplicate/i.test(err.message);
+          alert(sudahAda ? 'Akun untuk nasabah ini sudah pernah dibuat sebelumnya.' : ('Gagal membuat akun: ' + err.message));
+          if(sudahAda){ n.hasLogin = true; renderNasabahTable(); }
+        }finally{
+          btn.disabled = false;
+        }
+      });
+    });
+
+    // Reset PIN nasabah (via Supabase Edge Function, aman — Service Role Key tidak pernah ada di client)
+    document.querySelectorAll('[data-reset-nasabah-pin]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const id = btn.dataset.resetNasabahPin;
+        const n = nasabahList.find(x=>String(x.id)===id);
+        if(!n) return;
+        const pinBaru = prompt(`Reset PIN untuk ${n.nama} (${n.rek}).
+PIN baru minimal 6 digit angka:`, '123456');
+        if(pinBaru === null) return;
+        if(!/^\d{6,}$/.test(pinBaru)){ alert('PIN harus minimal 6 digit angka.'); return; }
+        if(!session){ alert('Sesi tidak ditemukan, silakan login ulang.'); return; }
+        btn.disabled = true;
+        try{
+          const res = await fetch(`${SUPABASE_URL}/functions/v1/reset-nasabah-pin`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({ nasabah_id: id, pin_baru: pinBaru })
+          });
+          const data = await res.json();
+          if(!res.ok) throw new Error(data.error || 'Gagal mereset PIN.');
+          alert(`PIN untuk ${n.nama} (${n.rek}) berhasil direset.\n\nPIN baru: ${pinBaru}\n\nSampaikan PIN ini ke nasabah.`);
+        }catch(err){
+          alert('Gagal reset PIN: ' + err.message);
+        }finally{
+          btn.disabled = false;
+        }
+      });
+    });
+  }
+
+  // Helper: konversi No. Rekening ke virtual email
+  function rekToEmail(rek){
+    return rek.toLowerCase().replace(/[^a-z0-9]/g,'-') + '@sesama.internal';
   }
 
   async function loadAdminList(){
@@ -1915,6 +2068,7 @@
     document.body.removeChild(a); URL.revokeObjectURL(url);
   }
   $('btnJson').addEventListener('click', ()=>{
+    if(currentRole !== 'superadmin'){ alert('Hanya Super Admin yang dapat mengunduh backup.'); return; }
     if(transaksi.length===0){ alert('Belum ada data untuk dicadangkan.'); return; }
     const payload = { diekspor_pada:new Date().toISOString(), daftar_harga:priceList,
       transaksi: transaksi.map(t=>({...t, akun:t.akun.nama+' — '+t.akun.rek})) };
@@ -2227,6 +2381,10 @@
   const bukuSearch = $('bukuSearch'), bukuComboList = $('bukuComboList'), bukuHasil = $('bukuHasil');
 
   function renderBukuCombo(filter){
+    // Nasabah hanya bisa melihat tabungan miliknya sendiri
+    if(currentRole==='nasabah' && currentUser && currentUser.nasabahId){
+      return; // search box di-disable untuk nasabah, tidak perlu render combo
+    }
     const q = (filter||'').toLowerCase().trim();
     const matches = nasabahList.filter(n => !q || n.nama.toLowerCase().includes(q) || n.rek.toLowerCase().includes(q));
     bukuComboList.innerHTML = matches.length ? matches.map(n=>`
@@ -2335,6 +2493,9 @@
   $('btnBukuTabungan').addEventListener('click', ()=>{
     bukuSelectedAkun = null;
     bukuSearch.value = '';
+    bukuSearch.readOnly = false;
+    bukuSearch.style.background = '';
+    bukuSearch.title = '';
     renderBukuHasil();
     openModal('modalBuku');
   });
@@ -2356,20 +2517,16 @@
       tab.classList.add('active');
       $('panelStaf').style.display = tab.dataset.tab==='staf' ? 'block' : 'none';
       $('panelNasabah').style.display = tab.dataset.tab==='nasabah' ? 'block' : 'none';
+      $('panelDaftar').style.display = tab.dataset.tab==='daftar' ? 'block' : 'none';
       $('loginError').style.display = 'none';
-    });
-  });
-  document.querySelectorAll('.subtab').forEach(tab=>{
-    tab.addEventListener('click', ()=>{
-      document.querySelectorAll('.subtab').forEach(t=>t.classList.remove('active'));
-      tab.classList.add('active');
-      $('subDaftar').style.display = tab.dataset.sub==='daftar' ? 'block' : 'none';
-      $('subMasuk').style.display = tab.dataset.sub==='masuk' ? 'block' : 'none';
+      $('nasabahLoginError').style.display = 'none';
+      $('daftarError').style.display = 'none';
+      $('daftarSuccess').style.display = 'none';
     });
   });
 
-  async function masukKeAplikasi(role, nama){
-    currentUser = { nama, role };
+  async function masukKeAplikasi(role, nama, nasabahId){
+    currentUser = { nama, role, nasabahId: nasabahId || null };
     $('loginScreen').style.display = 'none';
     $('appRoot').style.display = 'block';
     setRole(role);
@@ -2377,6 +2534,48 @@
     await Promise.all([ loadNasabah(), loadTransaksi() ]);
     if(role==='admin' || role==='superadmin') await loadPendingNasabah();
     renderStats(); renderLedger();
+    // Nasabah langsung dibawa ke buku tabungan miliknya sendiri
+    if(role === 'nasabah' && nasabahId){
+      const akunSaya = nasabahList.find(n=>String(n.id)===String(nasabahId));
+      if(akunSaya){
+        bukuSelectedAkun = akunSaya;
+        bukuSearch.value = `${akunSaya.nama} — ${akunSaya.rek}`;
+        renderBukuHasil();
+        // Ganti search field menjadi readonly agar nasabah tidak bisa ganti ke nasabah lain
+        bukuSearch.readOnly = true;
+        bukuSearch.style.background = 'var(--sand-200)';
+        bukuSearch.title = 'Anda hanya dapat melihat buku tabungan milik Anda sendiri.';
+        $('btnUbahPin').style.display = 'inline-block';
+        openModal('modalBuku');
+      }
+    }
+  }
+
+  // Coba pulihkan sesi yang tersimpan (dipanggil saat halaman baru dibuka/refresh).
+  // Kalau berhasil, langsung masuk ke aplikasi tanpa perlu login ulang.
+  async function cobaPulihkanSesi(){
+    let disimpan = null;
+    try{ disimpan = JSON.parse(localStorage.getItem(KUNCI_SESI_TERSIMPAN) || 'null'); }catch(e){ /* abaikan */ }
+    if(!disimpan || !disimpan.refresh_token) return false;
+
+    try{
+      const auth = await supabaseRefreshToken(disimpan.refresh_token);
+      simpanSesi(auth);
+      const profil = await supabaseGetProfile(auth.user.id, auth.access_token);
+      if(!profil) throw new Error('Profil pengguna tidak ditemukan.');
+      if(profil.must_change_password){
+        tampilkanPaksaGantiPassword(profil.role, profil.nama);
+        return true;
+      }
+      await masukKeAplikasi(profil.role, profil.nama, profil.nasabah_id);
+      return true;
+    }catch(err){
+      console.error('Gagal memulihkan sesi tersimpan:', err.message);
+      hentikanRefreshSesi();
+      session = null;
+      hapusSesiTersimpan();
+      return false;
+    }
   }
 
   /* =================== WAJIB GANTI PASSWORD (login pertama) =================== */
@@ -2465,46 +2664,104 @@
     $(id).addEventListener('keydown', (e)=>{ if(e.key==='Enter') $('btnLoginStaf').click(); });
   });
 
-  $('btnMasukPengunjung').addEventListener('click', async ()=>{
-    await masukKeAplikasi('visitor', 'Pengunjung');
+  // Login Nasabah: Nama + PIN (dicari dulu email virtualnya lewat nama, baru sign-in)
+  function setNasabahLoginBusy(busy){
+    $('btnLoginNasabah').disabled = busy;
+    $('nasabahLoginLoadingHint').style.display = busy ? 'block' : 'none';
+  }
+
+  $('btnLoginNasabah').addEventListener('click', async ()=>{
+    const nama = $('nasabahNama').value.trim();
+    const pin = $('nasabahPin').value;
+    const errEl = $('nasabahLoginError');
+    errEl.style.display = 'none';
+    if(!nama || !pin){ errEl.textContent='Nama akun dan PIN wajib diisi.'; errEl.style.display='block'; return; }
+
+    setNasabahLoginBusy(true);
+    try{
+      // Cari akun nasabah berdasarkan nama (case-insensitive, cocok persis)
+      const cocok = await supabaseRest(`profiles?nama=ilike.${encodeURIComponent(nama)}&role=eq.nasabah&select=email`);
+      if(!cocok || cocok.length === 0){
+        throw new Error('__NAMA_TIDAK_DITEMUKAN__');
+      }
+      if(cocok.length > 1){
+        throw new Error('__NAMA_GANDA__');
+      }
+      const virtualEmail = cocok[0].email;
+      const auth = await supabaseSignIn(virtualEmail, pin);
+      const profil = await supabaseGetProfile(auth.user.id, auth.access_token);
+      if(!profil || profil.role !== 'nasabah'){
+        throw new Error('Akun ini bukan akun nasabah. Gunakan tab Login Staf jika Anda adalah admin.');
+      }
+      simpanSesi(auth);
+      $('nasabahNama').value=''; $('nasabahPin').value='';
+      await masukKeAplikasi('nasabah', profil.nama, profil.nasabah_id);
+    }catch(err){
+      const msg = err.message || '';
+      if(msg === '__NAMA_TIDAK_DITEMUKAN__'){
+        errEl.textContent = 'Nama akun tidak ditemukan. Periksa ejaan atau hubungi Admin.';
+      } else if(msg === '__NAMA_GANDA__'){
+        errEl.textContent = 'Ditemukan lebih dari satu akun dengan nama yang sama. Hubungi Admin untuk dibantu masuk.';
+      } else if(/invalid.*credentials|email.*not.*confirmed|invalid login/i.test(msg)){
+        errEl.textContent = 'Nama akun atau PIN salah. Hubungi Admin jika lupa PIN.';
+      } else {
+        errEl.textContent = msg || 'Gagal masuk. Periksa kembali nama akun dan PIN.';
+      }
+      errEl.style.display = 'block';
+    }finally{
+      setNasabahLoginBusy(false);
+    }
+  });
+  ['nasabahNama','nasabahPin'].forEach(id=>{
+    $(id).addEventListener('keydown', (e)=>{ if(e.key==='Enter') $('btnLoginNasabah').click(); });
   });
 
+  /* =================== PENDAFTARAN CALON NASABAH (dari halaman login) =================== */
   $('btnDaftarNasabah').addEventListener('click', async ()=>{
-    const nama = $('regNama').value.trim();
-    const rt = $('regRT').value.trim();
-    const rw = $('regRW').value.trim();
-    const alamat = $('regAlamat').value.trim();
-    const kontak = $('regKontak').value.trim();
-    const errEl = $('regError'), okEl = $('regSuccess');
-    okEl.style.display='none';
-    if(!nama || !rt || !rw){
-      errEl.textContent = 'Nama, RT, dan RW wajib diisi.';
-      errEl.style.display = 'block';
-      return;
-    }
-    errEl.style.display='none';
+    const nama = $('daftarNama').value.trim();
+    const rt = $('daftarRt').value.trim();
+    const rw = $('daftarRw').value.trim();
+    const alamat = $('daftarAlamat').value.trim();
+    const kontak = $('daftarKontak').value.trim();
+    const errEl = $('daftarError');
+    const okEl = $('daftarSuccess');
+    errEl.style.display = 'none';
+    okEl.style.display = 'none';
+
+    if(!nama){ errEl.textContent='Nama lengkap wajib diisi.'; errEl.style.display='block'; return; }
+    if(!rt || !rw){ errEl.textContent='RT dan RW wajib diisi.'; errEl.style.display='block'; return; }
+
     const btn = $('btnDaftarNasabah');
     btn.disabled = true;
+    $('daftarLoadingHint').style.display = 'block';
     try{
       await supabaseRest('pendaftaran_nasabah', {
         method:'POST',
         headers:{'Prefer':'return=minimal'},
-        body: JSON.stringify({ nama, rt, rw, alamat: alamat||null, kontak: kontak||null })
+        body: JSON.stringify({
+          nama, rt, rw,
+          alamat: alamat || null,
+          kontak: kontak || null,
+          status: 'menunggu'
+        })
       });
-      $('regNama').value=''; $('regRT').value=''; $('regRW').value=''; $('regAlamat').value=''; $('regKontak').value='';
-      okEl.textContent = 'Pendaftaran terkirim. Menunggu verifikasi Admin sebelum akun aktif.';
+      okEl.textContent = 'Pendaftaran berhasil dikirim. Admin akan memverifikasi dan membagikan nomor rekening & PIN Anda.';
       okEl.style.display = 'block';
+      $('daftarNama').value=''; $('daftarRt').value=''; $('daftarRw').value='';
+      $('daftarAlamat').value=''; $('daftarKontak').value='';
     }catch(err){
       errEl.textContent = 'Gagal mengirim pendaftaran: ' + err.message;
       errEl.style.display = 'block';
     }finally{
       btn.disabled = false;
+      $('daftarLoadingHint').style.display = 'none';
     }
   });
 
-  $('btnLogout').addEventListener('click', async ()=>{
+  async function lakukanLogout(){
     if(session) await supabaseSignOut(session.access_token);
     hentikanRefreshSesi();
+    hapusSesiTersimpan();
     session = null;
     currentUser = null;
     confirmDeleteId = null; editingId = null;
@@ -2512,22 +2769,52 @@
     $('loginScreen').style.display = 'flex';
     $('loginEmail').value=''; $('loginPassword').value='';
     $('loginError').style.display='none';
-  });
+  }
 
-  /* =================== GANTI PASSWORD (staf yang sedang login) =================== */
-  $('btnGantiPassword').addEventListener('click', ()=>{
+  $('btnLogout').addEventListener('click', lakukanLogout);
+
+  /* =================== GANTI PASSWORD / UBAH PIN (pengguna yang sedang login) =================== */
+  function bukaModalGantiPassword(modePin){
     $('gpPasswordBaru').value=''; $('gpPasswordKonfirmasi').value='';
     $('gpError').style.display='none'; $('gpSuccess').style.display='none';
+    $('modalGantiPassword').dataset.modePin = modePin ? '1' : '';
+    if(modePin){
+      $('gpTitle').textContent = '🔑 Ubah PIN';
+      $('gpLabelBaru').textContent = 'PIN Baru';
+      $('gpLabelKonfirmasi').textContent = 'Ulangi PIN Baru';
+      $('gpPasswordBaru').setAttribute('inputmode','numeric');
+      $('gpPasswordKonfirmasi').setAttribute('inputmode','numeric');
+      $('gpHint').textContent = 'PIN minimal 6 digit angka. Anda akan tetap login setelah ini, tidak perlu masuk ulang.';
+    } else {
+      $('gpTitle').textContent = '🔑 Ganti Password';
+      $('gpLabelBaru').textContent = 'Password Baru';
+      $('gpLabelKonfirmasi').textContent = 'Ulangi Password Baru';
+      $('gpPasswordBaru').removeAttribute('inputmode');
+      $('gpPasswordKonfirmasi').removeAttribute('inputmode');
+      $('gpHint').textContent = 'Minimal 6 karakter. Anda akan tetap login setelah ini, tidak perlu masuk ulang.';
+    }
     openModal('modalGantiPassword');
+  }
+
+  $('btnGantiPassword').addEventListener('click', ()=> bukaModalGantiPassword(false));
+  $('btnUbahPin').addEventListener('click', ()=>{
+    // Sembunyikan modal Buku tanpa memicu logout otomatis (itu hanya berlaku saat modal Buku benar-benar ditutup oleh nasabah)
+    $('modalBuku').classList.remove('open');
+    bukaModalGantiPassword(true);
   });
 
   $('btnSimpanGantiPassword').addEventListener('click', async ()=>{
+    const modePin = $('modalGantiPassword').dataset.modePin === '1';
     const pw = $('gpPasswordBaru').value;
     const pw2 = $('gpPasswordKonfirmasi').value;
     const errEl = $('gpError'), okEl = $('gpSuccess');
     errEl.style.display='none'; okEl.style.display='none';
-    if(!pw || pw.length < 6){ errEl.textContent='Password minimal 6 karakter.'; errEl.style.display='block'; return; }
-    if(pw !== pw2){ errEl.textContent='Konfirmasi password tidak sama.'; errEl.style.display='block'; return; }
+    if(modePin){
+      if(!/^\d{6,}$/.test(pw)){ errEl.textContent='PIN harus minimal 6 digit angka.'; errEl.style.display='block'; return; }
+    } else {
+      if(!pw || pw.length < 6){ errEl.textContent='Password minimal 6 karakter.'; errEl.style.display='block'; return; }
+    }
+    if(pw !== pw2){ errEl.textContent = modePin ? 'Konfirmasi PIN tidak sama.' : 'Konfirmasi password tidak sama.'; errEl.style.display='block'; return; }
     if(!session){ errEl.textContent='Sesi tidak ditemukan, silakan login ulang.'; errEl.style.display='block'; return; }
 
     const btn = $('btnSimpanGantiPassword');
@@ -2541,10 +2828,14 @@
       const data = await res.json();
       if(!res.ok) throw new Error(data.error_description || data.msg || 'Gagal mengganti password.');
 
-      okEl.textContent = 'Password berhasil diganti.';
+      okEl.textContent = modePin ? 'PIN berhasil diganti.' : 'Password berhasil diganti.';
       okEl.style.display = 'block';
       $('gpPasswordBaru').value=''; $('gpPasswordKonfirmasi').value='';
-      setTimeout(()=> closeModal('modalGantiPassword'), 1400);
+      setTimeout(()=>{
+        closeModal('modalGantiPassword');
+        // Nasabah: kembali ke modal Buku Tabungan miliknya setelah selesai ganti PIN
+        if(modePin && currentRole === 'nasabah'){ openModal('modalBuku'); }
+      }, 1400);
     }catch(err){
       errEl.textContent = err.message;
       errEl.style.display = 'block';
@@ -2586,7 +2877,7 @@
             body: JSON.stringify({ nama:p.nama, rekening:rek, rt:p.rt, rw:p.rw, kontak:p.kontak||null, alamat:p.alamat||null, sumber:'online' })
           });
           const r = inserted[0];
-          nasabahList.push({ id:r.id, nama:r.nama, rek:r.rekening, rt:r.rt, rw:r.rw, kontak:r.kontak||'', alamat:r.alamat||'' });
+          nasabahList.push({ id:r.id, nama:r.nama, rek:r.rekening, rt:r.rt, rw:r.rw, kontak:r.kontak||'', alamat:r.alamat||'', hasLogin:false });
           nasabahList.sort((a,b)=>a.nama.localeCompare(b.nama,'id'));
 
           // Tandai status pendaftaran sebagai terverifikasi (tidak dihapus, untuk jejak riwayat)
@@ -2596,10 +2887,34 @@
             body: JSON.stringify({ status:'terverifikasi', diproses_oleh: session ? session.user_id : null })
           });
 
+          // Langsung buatkan akun login dengan PIN acak 6 digit
+          const pinAwal = '123456'; // PIN awal standar; nasabah bisa minta reset ke Admin jika diperlukan
+          let pesanAkun = '';
+          try{
+            const virtualEmail = rekToEmail(rek);
+            const daftar = await supabaseSignUp(virtualEmail, pinAwal);
+            if(!daftar.user || !daftar.user.id) throw new Error('Tidak ada data user dikembalikan.');
+            await supabaseRest('profiles', {
+              method:'POST', headers:{'Prefer':'return=representation'},
+              body: JSON.stringify({ id:daftar.user.id, nama:r.nama, email:virtualEmail, role:'nasabah', nasabah_id:r.id, must_change_password:false })
+            });
+            const idx = nasabahList.findIndex(x=>x.id===r.id);
+            if(idx>-1) nasabahList[idx].hasLogin = true;
+            pesanAkun = `\n\nAkun login otomatis dibuat:\nNo. Rek: ${rek}\nPIN: ${pinAwal}\n\nSampaikan PIN ini ke ${p.nama} untuk login.`;
+          }catch(errAkun){
+            const email = rekToEmail(rek);
+            const sudahAda = /already registered|duplicate/i.test(errAkun.message);
+            if(sudahAda){
+              pesanAkun = `\n\nRekening ${rek} berhasil dibuat, TAPI akun login GAGAL dibuat otomatis karena email virtual "${email}" sudah pernah terdaftar sebelumnya (sisa dari percobaan lama yang belum tuntas).\n\nCara memperbaiki:\n1. Buka Supabase Dashboard → Authentication → Users\n2. Cari & hapus user dengan email "${email}"\n3. Kembali ke sini, buka daftar Nasabah, cari "${p.nama}", lalu klik tombol "Buat Akun".`;
+            } else {
+              pesanAkun = `\n\nRekening berhasil dibuat, TAPI akun login gagal dibuat otomatis (${errAkun.message}). Silakan buat akun manual lewat tombol "Buat Akun" di daftar Nasabah.`;
+            }
+          }
+
           pendingNasabah = pendingNasabah.filter(x=>x.id!==id);
           renderVerifikasiList();
           updateBadgePending();
-          alert(`Akun nasabah "${p.nama}" terverifikasi dengan nomor rekening ${rek}.`);
+          alert(`Akun nasabah "${p.nama}" terverifikasi dengan nomor rekening ${rek}.${pesanAkun}`);
         }catch(err){
           alert('Gagal memproses verifikasi: ' + err.message);
           btn.disabled = false;
@@ -2664,6 +2979,10 @@
   });
 
   async function jalankanBackupOtomatis(namaFileTetap){
+    if(currentRole !== 'superadmin'){
+      console.warn('Backup otomatis dibatalkan: hanya Super Admin yang boleh menjalankan backup.');
+      return;
+    }
     try{
       // Ambil data paling baru dulu supaya isi backup benar-benar mutakhir
       await loadJenisHarga();
@@ -2701,6 +3020,10 @@
   }
 
   $('btnUjiBackup').addEventListener('click', async ()=>{
+    if(currentRole !== 'superadmin'){
+      alert('Hanya Super Admin yang dapat menjalankan backup.');
+      return;
+    }
     await jalankanBackupOtomatis();
     alert('Backup uji coba selesai. Cek folder yang dipilih (atau folder Download browser jika belum memilih folder).');
   });
@@ -2791,9 +3114,15 @@
   populateBeratOptions();
   setDefaultDateTime();
   updateBadgePending();
-  jadwalkanBackupTengahMalam();
-  jalankanBackupSaatDibuka();
-  cekTautanResetPassword();
+  // Backup otomatis TIDAK lagi dijadwalkan di sini — lihat setRole(), hanya aktif utk Super Admin.
+  const sedangResetPassword = cekTautanResetPassword();
+  if(!sedangResetPassword){
+    // Sembunyikan layar login sejenak selagi mencoba memulihkan sesi, biar tidak "kedip" ke form login
+    $('loginScreen').style.display = 'none';
+    cobaPulihkanSesi().then(berhasil=>{
+      if(!berhasil){ $('loginScreen').style.display = 'flex'; }
+    });
+  }
 
   // Duplikasi logo: hanya elemen #logoImg yang menyimpan data gambar (base64),
   // elemen logo lain cukup mewarisi src-nya lewat JS supaya file tidak menyimpan gambar berulang kali.
