@@ -406,6 +406,9 @@
   .pending-item .info .meta{font-size:11.5px; color:var(--ink-600);}
   .pending-actions{display:flex; gap:8px; flex-shrink:0;}
   .pending-empty{text-align:center; padding:30px 10px; color:var(--ink-600); font-size:13px;}
+@media (max-width: 480px){
+  .btn-unduh-buku-full{ display:none; }
+}
 </style>
 </head>
 <body>
@@ -833,7 +836,7 @@
     </div>
     <div class="modal-foot">
       <button class="btn-mini cancel" id="btnUbahPin" style="display:none; margin-right:auto;">🔑 Ubah PIN</button>
-      <button class="btn-mini confirm" id="btnUnduhBukuPdf" style="display:none;">📄 Unduh Buku Tabungan</button>
+      <button class="btn-mini confirm" id="btnUnduhBukuPdf" style="display:none; white-space:nowrap;">📄 <span class="btn-unduh-buku-text">Unduh<span class="btn-unduh-buku-full"> Buku Tabungan</span></span></button>
       <button class="btn-mini cancel" data-close="modalBuku" style="margin-left:14px;">Tutup</button>
     </div>
   </div>
