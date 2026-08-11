@@ -819,7 +819,7 @@
 
 <!-- ===== MODAL: Buku Tabungan Nasabah (semua peran) ===== -->
 <div class="modal-overlay" id="modalBuku">
-  <div class="modal-panel" style="max-width:640px;">
+  <div class="modal-panel" style="max-width:960px;" id="modalBukuPanel">
     <div class="modal-head">
       <h3>🔍 Buku Tabungan Nasabah</h3>
       <button class="modal-close" data-close="modalBuku">✕</button>
@@ -828,7 +828,7 @@
       <div class="field" style="margin-bottom:14px;">
         <label for="bukuSearch">Cari Nasabah</label>
         <input type="text" id="bukuSearch" placeholder="Ketik nama nasabah / nomor rekening..." autocomplete="off">
-        <div class="combo-list" id="bukuComboList"></div>
+        <div class="combo-list" id="bukuComboList" style="position:static; max-height:340px; overflow-y:auto; margin-top:6px; box-shadow:none;"></div>
       </div>
       <div id="bukuHasil">
         <p class="hint">Pilih nasabah untuk menampilkan riwayat dan saldo buku tabungannya.</p>
