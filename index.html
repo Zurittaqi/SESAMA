@@ -734,12 +734,12 @@
         </div>
       </div>
 
-      <div class="field" style="margin-bottom:14px;">
+      <div class="field" style="margin-bottom:14px;" id="fieldJenisSampah">
         <label for="fJenis">Jenis Sampah</label>
         <select id="fJenis"></select>
       </div>
 
-      <div class="field-row">
+      <div class="field-row" id="rowBeratHarga">
         <div class="field">
           <label for="fBerat">Berat (Kg)</label>
           <input type="text" id="fBerat" placeholder="cth. 0,75" inputmode="decimal" list="listBerat">
@@ -756,7 +756,7 @@
         </div>
       </div>
 
-      <div class="total-display">
+      <div class="total-display" id="totalDisplayWrap">
         <span class="lbl">Total Harga</span>
         <span class="val mono" id="fTotal">Rp 0</span>
       </div>
@@ -768,10 +768,16 @@
           <button type="button" class="ok-round-btn" id="btnOkRecord" title="Rekam transaksi ini">OK</button>
           <div class="stamp-btn tarik" data-tipe="tarik">Tarik Saldo <small>nasabah mencairkan</small></div>
         </div>
-        <p class="ok-hint" id="okHint">Tekan OK untuk merekam transaksi ini &amp; langsung tambah transaksi baru untuk nasabah yang sama.</p>
       </div>
 
       <div class="toast-confirm" id="toastConfirm">✓ <span id="toastText">Transaksi tersimpan.</span></div>
+
+      <div class="field" id="fieldNominalTarik" style="display:none; margin-bottom:14px;">
+        <label for="fNominalTarik">Nominal Uang Ditarik (Rp)</label>
+        <input type="text" id="fNominalTarik" placeholder="cth. 50.000" inputmode="numeric">
+        <span class="hint" id="hintNominalTarik">Isi jumlah uang tunai yang dicairkan/ditarik oleh nasabah.</span>
+        <p class="hint" id="saranNominalTarik" style="display:none; margin-top:4px; color:var(--forest-700); font-weight:600;"></p>
+      </div>
 
       <div class="field">
         <label for="fKeterangan">Keterangan</label>
@@ -1396,7 +1402,8 @@
   }
 
   const fTanggal=$('fTanggal'), fJam=$('fJam'), fJenis=$('fJenis'), fBerat=$('fBerat'),
-        fHargaTampil=$('fHargaTampil'), fTotal=$('fTotal'), fKeterangan=$('fKeterangan');
+        fHargaTampil=$('fHargaTampil'), fTotal=$('fTotal'), fKeterangan=$('fKeterangan'),
+        fNominalTarik=$('fNominalTarik');
 
   function setDefaultDateTime(){
     const now = new Date();
@@ -1417,6 +1424,42 @@
     if(!str) return NaN;
     return parseFloat(str.trim().replace(/\./g,'').replace(',', '.'));
   }
+  function parseNominal(str){
+    if(!str) return NaN;
+    const digits = str.toString().replace(/[^\d]/g,'');
+    return digits ? Number(digits) : NaN;
+  }
+  function formatNominalInput(el){
+    const digits = el.value.replace(/[^\d]/g,'');
+    el.value = digits ? Number(digits).toLocaleString('id-ID') : '';
+  }
+  fNominalTarik.addEventListener('input', ()=>formatNominalInput(fNominalTarik));
+
+  // Hitung saldo bersih (Rp) milik seorang akun nasabah dari seluruh transaksi yang sudah tercatat.
+  function saldoAkun(akun){
+    if(!akun) return 0;
+    return transaksi
+      .filter(t => t.akun && String(t.akun.id) === String(akun.id))
+      .reduce((s,t) => s + (t.tipe === 'setor' ? t.total : -t.total), 0);
+  }
+
+  // Tampilkan saran nominal penarikan (saldo - 5.000, dibulatkan ke bawah ke ribuan terdekat),
+  // atau peringatan jika saldo nasabah kurang dari 5.000.
+  function updateSaranNominalTarik(){
+    const saran = $('saranNominalTarik');
+    if(tipeAktif !== 'tarik' || !selectedAkun){ saran.style.display = 'none'; return; }
+    const saldo = saldoAkun(selectedAkun);
+    if(saldo < 5000){
+      saran.style.color = 'var(--stamp-red)';
+      saran.textContent = `⚠ Saldo tidak mencukupi. Saldo nasabah saat ini: ${rupiah(saldo)}.`;
+      saran.style.display = 'block';
+      return;
+    }
+    const maksSaran = Math.floor((saldo - 5000) / 1000) * 1000;
+    saran.style.color = 'var(--forest-700)';
+    saran.textContent = `💡 Saldo saat ini: ${rupiah(saldo)}. Saran maksimal tarik: ${rupiah(maksSaran)} (sisakan minimal Rp 5.000).`;
+    saran.style.display = 'block';
+  }
   function hitungTotal(){
     const berat = parseBerat(fBerat.value);
     const harga = priceList[fJenis.value] || 0;
@@ -1427,10 +1470,21 @@
   fJenis.addEventListener('change', updateHargaTampil);
   fBerat.addEventListener('input', hitungTotal);
 
+  // Tampilkan field jenis/berat/harga untuk Setor, atau nominal langsung untuk Tarik Saldo.
+  function toggleFieldsByTipe(tipe){
+    const isTarik = tipe === 'tarik';
+    $('fieldJenisSampah').style.display = isTarik ? 'none' : '';
+    $('rowBeratHarga').style.display = isTarik ? 'none' : '';
+    $('totalDisplayWrap').style.display = isTarik ? 'none' : '';
+    $('fieldNominalTarik').style.display = isTarik ? '' : 'none';
+    updateSaranNominalTarik();
+  }
+
   document.querySelectorAll('.stamp-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       document.querySelectorAll('.stamp-btn').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active'); tipeAktif = btn.dataset.tipe;
+      toggleFieldsByTipe(tipeAktif);
     });
   });
 
@@ -1450,6 +1504,7 @@
         selectedAkun = n;
         fNasabahSearch.value = `${n.nama} — ${n.rek}`;
         comboList.classList.remove('open');
+        updateSaranNominalTarik();
       });
     });
   }
@@ -1458,6 +1513,7 @@
     selectedAkun = null;
     renderCombo(fNasabahSearch.value);
     comboList.classList.add('open');
+    updateSaranNominalTarik();
   });
   document.addEventListener('click', (e)=>{
     if(!e.target.closest('.field') || !e.target.closest('#fNasabahSearch,#comboList')){
@@ -1466,7 +1522,7 @@
   });
 
   function resetForm(fullReset){
-    fBerat.value=''; fKeterangan.value=''; fTotal.textContent=rupiah(0);
+    fBerat.value=''; fKeterangan.value=''; fTotal.textContent=rupiah(0); fNominalTarik.value='';
     setDefaultDateTime();
     if(fullReset){
       fNasabahSearch.value=''; selectedAkun=null;
@@ -1476,6 +1532,7 @@
       strukSementara = [];
       updateTombolCetakStruk();
     }
+    toggleFieldsByTipe(tipeAktif);
     renderJenisOptions();
   }
 
@@ -1483,13 +1540,11 @@
     editingId = null;
     $('modalTambahTitle').textContent = '＋ Tambah Transaksi';
     $('btnOkRecord').style.display = 'flex';
-    $('okHint').style.display = 'block';
     $('btnSimpanTransaksi').textContent = 'Selesai & Tutup';
   }
   function setModeEdit(){
     $('modalTambahTitle').textContent = '✎ Edit Transaksi';
     $('btnOkRecord').style.display = 'none';
-    $('okHint').style.display = 'none';
     $('btnSimpanTransaksi').textContent = 'Simpan Perubahan';
   }
 
@@ -1555,24 +1610,48 @@
 
   // Validasi + simpan satu baris transaksi (tambah baru, atau perbarui jika sedang mode edit).
   async function rekamTransaksi(){
-    const berat = parseBerat(fBerat.value);
     if(!selectedAkun){ alert('Pilih pemilik rekening (nasabah) terlebih dahulu.'); fNasabahSearch.focus(); return false; }
     if(!fTanggal.value){ alert('Tanggal wajib diisi.'); return false; }
     if(!fJam.value){ alert('Jam wajib diisi.'); return false; }
-    if(!fJenis.value){ alert('Pilih jenis sampah.'); return false; }
-    if(isNaN(berat) || berat<=0){ alert('Berat tidak valid. Contoh: 0,75'); fBerat.focus(); return false; }
 
-    hitungTotal(); // sekadar refresh tampilan total; nilai sesungguhnya dihitung server (kolom generated)
-    const payload = {
-      nasabah_id: selectedAkun.id,
-      tanggal: fTanggal.value, // input type=date sudah dalam format ISO yyyy-mm-dd
-      jam: fJam.value,
-      jenis_nama: fJenis.value,
-      berat_kg: berat,
-      harga_kg: priceList[fJenis.value],
-      tipe: tipeAktif,
-      keterangan: fKeterangan.value.trim() || null
-    };
+    let payload;
+    if(tipeAktif === 'tarik'){
+      const nominal = parseNominal(fNominalTarik.value);
+      if(isNaN(nominal) || nominal<=0){ alert('Nominal penarikan tidak valid. Contoh: 50.000'); fNominalTarik.focus(); return false; }
+      let saldoTersedia = saldoAkun(selectedAkun);
+      if(editingId){
+        // Saat mengedit transaksi tarik yang sudah ada, kembalikan dulu nominal lamanya ke saldo sebelum dicek.
+        const lama = transaksi.find(t=>String(t.id)===editingId);
+        if(lama && lama.tipe==='tarik' && lama.akun && String(lama.akun.id)===String(selectedAkun.id)) saldoTersedia += lama.total;
+      }
+      if(saldoTersedia < 5000){ alert('Saldo tidak mencukupi.'); fNominalTarik.focus(); return false; }
+      if(nominal > saldoTersedia){ alert(`Saldo tidak mencukupi. Saldo tersedia: ${rupiah(saldoTersedia)}.`); fNominalTarik.focus(); return false; }
+      payload = {
+        nasabah_id: selectedAkun.id,
+        tanggal: fTanggal.value,
+        jam: fJam.value,
+        jenis_nama: 'Tarik Saldo',
+        berat_kg: nominal,
+        harga_kg: 1,
+        tipe: tipeAktif,
+        keterangan: fKeterangan.value.trim() || null
+      };
+    } else {
+      const berat = parseBerat(fBerat.value);
+      if(!fJenis.value){ alert('Pilih jenis sampah.'); return false; }
+      if(isNaN(berat) || berat<=0){ alert('Berat tidak valid. Contoh: 0,75'); fBerat.focus(); return false; }
+      hitungTotal(); // sekadar refresh tampilan total; nilai sesungguhnya dihitung server (kolom generated)
+      payload = {
+        nasabah_id: selectedAkun.id,
+        tanggal: fTanggal.value, // input type=date sudah dalam format ISO yyyy-mm-dd
+        jam: fJam.value,
+        jenis_nama: fJenis.value,
+        berat_kg: berat,
+        harga_kg: priceList[fJenis.value],
+        tipe: tipeAktif,
+        keterangan: fKeterangan.value.trim() || null
+      };
+    }
 
     try{
       if(editingId){
@@ -1616,13 +1695,22 @@
     fJam.value = t.jam;
     selectedAkun = t.akun;
     fNasabahSearch.value = `${t.akun.nama} — ${t.akun.rek}`;
-    fJenis.value = t.jenis;
-    updateHargaTampil();
-    fBerat.value = String(t.beratKg).replace('.', ',');
-    hitungTotal();
-    fKeterangan.value = t.keterangan;
     document.querySelectorAll('.stamp-btn').forEach(b=>b.classList.toggle('active', b.dataset.tipe===t.tipe));
     tipeAktif = t.tipe;
+    toggleFieldsByTipe(tipeAktif);
+    if(t.tipe === 'tarik'){
+      fNominalTarik.value = Number(t.total).toLocaleString('id-ID');
+      fJenis.value = t.jenis; updateHargaTampil();
+      fBerat.value = String(t.beratKg).replace('.', ',');
+      hitungTotal();
+    } else {
+      fJenis.value = t.jenis;
+      updateHargaTampil();
+      fBerat.value = String(t.beratKg).replace('.', ',');
+      hitungTotal();
+      fNominalTarik.value = '';
+    }
+    fKeterangan.value = t.keterangan;
     setModeEdit();
     openModal('modalTambah');
   }
@@ -1634,6 +1722,7 @@
     if(await rekamTransaksi()){
       resetForm(false);
       selectedAkun = akunSaatIni;
+      updateSaranNominalTarik();
       showToast(`Tersimpan untuk ${akunSaatIni.nama}. Siap tambah transaksi berikutnya.`);
       fBerat.focus();
     }
@@ -1651,7 +1740,7 @@
       $('btnSimpanTransaksi').disabled = false;
       return;
     }
-    const adaIsian = fBerat.value.trim() !== '';
+    const adaIsian = tipeAktif === 'tarik' ? fNominalTarik.value.trim() !== '' : fBerat.value.trim() !== '';
     if(adaIsian){
       if(!(await rekamTransaksi())){ $('btnSimpanTransaksi').disabled = false; return; }
     }
