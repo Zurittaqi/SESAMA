@@ -238,6 +238,7 @@
     border-color:var(--forest-500); box-shadow:0 0 0 3px rgba(76,123,108,.18);
   }
   .field .hint{font-size:11px; color:var(--ink-600); opacity:.75;}
+  #tarikNominal::placeholder{ color:#c8c8c4; font-weight:400; letter-spacing:0; }
 
   /* Combobox nasabah */
   .combo-list{
@@ -342,6 +343,33 @@
     .header-actions{width:100%;}
   }
   @media (max-width:560px){ .stats-grid{grid-template-columns:1fr;} }
+
+  /* ===== Dropdown Aksi ===== */
+  .dropdown-aksi{position:relative; display:inline-flex;}
+  .dropdown-aksi .dropdown-menu{
+    display:none; position:absolute; top:calc(100% + 6px); left:0; z-index:200;
+    background:#fff; border:1.5px solid var(--line); border-radius:10px;
+    box-shadow:0 8px 24px -8px rgba(18,46,40,.22); min-width:220px; overflow:hidden;
+  }
+  .dropdown-aksi.open .dropdown-menu{display:block;}
+  .dropdown-menu .dd-item{
+    display:flex; align-items:center; gap:10px; padding:10px 14px;
+    font-size:13.5px; font-weight:700; color:var(--forest-800); cursor:pointer;
+    border-bottom:1px solid var(--sand-200); white-space:nowrap;
+    background:#fff; border-left:none; border-right:none;
+    transition:background .12s;
+  }
+  .dropdown-menu .dd-item:last-child{border-bottom:none;}
+  .dropdown-menu .dd-item:hover{background:var(--sand-100);}
+  .dropdown-menu .dd-item .ic{
+    width:22px; height:22px; border-radius:6px; flex-shrink:0; display:flex; align-items:center;
+    justify-content:center; font-size:11px; font-weight:800; color:#fff; background:var(--forest-500);
+  }
+  .dropdown-menu .dd-item .ic.xlsx{background:#1D6F42;}
+  .dropdown-menu .dd-item .ic.pdf{background:#B0362C;}
+  .dropdown-menu .dd-item .ic.gear{background:var(--forest-700);}
+  .dropdown-menu .dd-item .ic.json{background:#4C7B6C;}
+  .dropdown-menu .dd-item .ic.srv{background:var(--brass-600);}
 
   /* ===== Badge notifikasi ===== */
   .badge-count{
@@ -627,28 +655,45 @@
     <button class="btn-action" id="btnVerifikasi" style="display:none;">
       <span class="ic user">🧾</span><span class="btn-label">Verifikasi Pendaftaran</span><span class="badge-count" id="badgePending" style="display:none;">0</span>
     </button>
-    <button class="btn-action" id="btnKelolaHarga" style="display:none;">
-      <span class="ic gear">⚙</span><span class="btn-label">Kelola Daftar Harga</span>
-    </button>
+    <!-- Dropdown Aksi -->
+    <div class="dropdown-aksi" id="dropdownAksi" style="display:none;">
+      <button class="btn-action" id="btnDropdownAksi">
+        <span class="ic" style="background:var(--stamp-red);">💢</span><span class="btn-label">Aksi</span><span style="margin-left:4px; font-size:10px;">▾</span>
+      </button>
+      <div class="dropdown-menu" id="menuDropdownAksi">
+        <button class="dd-item" id="ddExcel">
+          <span class="ic xlsx">X</span>Ekspor Excel
+        </button>
+        <button class="dd-item" id="ddPdf">
+          <span class="ic pdf">P</span>Ekspor PDF
+        </button>
+        <button class="dd-item" id="ddKelolaHarga">
+          <span class="ic gear">⚙</span>Kelola Daftar Harga
+        </button>
+        <button class="dd-item" id="ddImportJson">
+          <span class="ic json">↺</span>Panggil Data JSON
+        </button>
+        <button class="dd-item" id="ddUnduhBackupJson">
+          <span class="ic json">{ }</span>Unduh Backup JSON
+        </button>
+        <button class="dd-item" id="ddUnduhBackupServer">
+          <span class="ic srv">⬇</span>Unduh BackUp Server
+        </button>
+      </div>
+    </div>
+    <input type="file" id="inputImportJson" accept="application/json" style="display:none;">
     <button class="btn-action" id="btnKelolaPengguna" style="display:none;">
       <span class="ic user">👷</span><span class="btn-label">Kelola Pengguna</span>
     </button>
     <button class="btn-action primary" id="btnBukaTambah" style="display:none;">
       <span class="ic plus">＋</span><span class="btn-label">Tambah Transaksi</span>
     </button>
-    <button class="btn-action" id="btnJson" style="display:none;">
-      <span class="ic json">{ }</span><span class="btn-label">Unduh Backup JSON</span>
-    </button>
-    <button class="btn-action" id="btnImportJson" style="display:none;">
-      <span class="ic json">↺</span><span class="btn-label">Panggil Data JSON</span>
-    </button>
-    <input type="file" id="inputImportJson" accept="application/json" style="display:none;">
-    <button class="btn-action" id="btnExcel" style="display:none;">
-      <span class="ic xlsx">X</span><span class="btn-label">Ekspor Excel</span>
-    </button>
-    <button class="btn-action" id="btnPdf" style="display:none;">
-      <span class="ic pdf">P</span><span class="btn-label">Ekspor PDF</span>
-    </button>
+    <!-- Legacy hidden buttons to keep JS compatibility -->
+    <button id="btnExcel" style="display:none;"></button>
+    <button id="btnPdf" style="display:none;"></button>
+    <button id="btnImportJson" style="display:none;"></button>
+    <button id="btnKelolaHarga" style="display:none;"></button>
+    <button id="btnJson" style="display:none;"></button>
   </div>
 
   <div class="stats-grid" id="statsGrid"></div>
@@ -734,12 +779,12 @@
         </div>
       </div>
 
-      <div class="field" style="margin-bottom:14px;" id="fieldJenisSampah">
+      <div class="field" style="margin-bottom:14px;">
         <label for="fJenis">Jenis Sampah</label>
         <select id="fJenis"></select>
       </div>
 
-      <div class="field-row" id="rowBeratHarga">
+      <div class="field-row">
         <div class="field">
           <label for="fBerat">Berat (Kg)</label>
           <input type="text" id="fBerat" placeholder="cth. 0,75" inputmode="decimal" list="listBerat">
@@ -756,7 +801,7 @@
         </div>
       </div>
 
-      <div class="total-display" id="totalDisplayWrap">
+      <div class="total-display">
         <span class="lbl">Total Harga</span>
         <span class="val mono" id="fTotal">Rp 0</span>
       </div>
@@ -768,16 +813,10 @@
           <button type="button" class="ok-round-btn" id="btnOkRecord" title="Rekam transaksi ini">OK</button>
           <div class="stamp-btn tarik" data-tipe="tarik">Tarik Saldo <small>nasabah mencairkan</small></div>
         </div>
+        <p class="ok-hint" id="okHint">Tekan OK untuk merekam transaksi ini &amp; langsung tambah transaksi baru untuk nasabah yang sama.</p>
       </div>
 
       <div class="toast-confirm" id="toastConfirm">✓ <span id="toastText">Transaksi tersimpan.</span></div>
-
-      <div class="field" id="fieldNominalTarik" style="display:none; margin-bottom:14px;">
-        <label for="fNominalTarik">Nominal Uang Ditarik (Rp)</label>
-        <input type="text" id="fNominalTarik" placeholder="cth. 50.000" inputmode="numeric">
-        <span class="hint" id="hintNominalTarik">Isi jumlah uang tunai yang dicairkan/ditarik oleh nasabah.</span>
-        <p class="hint" id="saranNominalTarik" style="display:none; margin-top:4px; color:var(--forest-700); font-weight:600;"></p>
-      </div>
 
       <div class="field">
         <label for="fKeterangan">Keterangan</label>
@@ -788,6 +827,64 @@
       <button class="btn-mini cancel" data-close="modalTambah">Batal</button>
       <button class="btn-mini cancel" id="btnCetakStruk" style="display:none;">🖨️ Cetak Struk</button>
       <button class="btn-mini confirm" id="btnSimpanTransaksi">Selesai &amp; Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: Tarik Saldo ===== -->
+<div class="modal-overlay" id="modalTarikSaldo">
+  <div class="modal-panel" style="max-width:460px;">
+    <div class="modal-head">
+      <h3>💸 Tarik Saldo</h3>
+      <button class="modal-close" data-close="modalTarikSaldo">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="field" style="margin-bottom:14px;">
+        <label>Pemilik Rekening (Nasabah)</label>
+        <div id="tarikNasabahInfo" style="
+          padding:10px 14px;
+          background:var(--surface-2,#f4f4f2);
+          border:1px solid var(--line);
+          border-radius:8px;
+          font-weight:600;
+          font-size:14px;
+          color:var(--fg);
+        ">—</div>
+      </div>
+
+      <div class="field" style="margin-bottom:14px;">
+        <label for="tarikNominal">Nominal Penarikan</label>
+        <input type="text" id="tarikNominal" placeholder="contoh 50000" inputmode="numeric" autocomplete="off"
+          style="font-size:18px; font-weight:700; letter-spacing:.02em;">
+        <span class="hint" id="tarikHint">Sisa saldo setelah tarik minimal <strong>Rp 5.000</strong>.</span>
+      </div>
+
+      <div class="total-display" id="tarikSaldoDisplay" style="margin-bottom:14px;">
+        <span class="lbl">Saldo Saat Ini</span>
+        <span class="val mono" id="tarikSaldoSaatIni">Rp 0</span>
+      </div>
+
+      <div class="field-row" style="margin-top:14px;">
+        <div class="field">
+          <label for="tarikTanggal">Tanggal</label>
+          <input type="date" id="tarikTanggal">
+        </div>
+        <div class="field">
+          <label for="tarikJam">Jam</label>
+          <input type="time" id="tarikJam" step="60">
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:0;">
+        <label for="tarikKeterangan">Keterangan</label>
+        <textarea id="tarikKeterangan" rows="2" placeholder="Catatan tambahan (opsional)"></textarea>
+      </div>
+
+    </div>
+    <div class="modal-foot">
+      <button class="btn-mini cancel" data-close="modalTarikSaldo">Batal</button>
+      <button class="btn-mini confirm" id="btnSimpanTarik" style="background:var(--stamp-red,#c0392b); border-color:var(--stamp-red,#c0392b);">Simpan Penarikan</button>
     </div>
   </div>
 </div>
@@ -858,7 +955,6 @@
     <div class="modal-body">
 
       <h4 style="margin:0 0 4px; font-size:14px; color:var(--forest-900);">Nasabah</h4>
-      <p class="hint" style="margin:0 0 10px;">Input nasabah oleh Super Admin. Setelah ditambahkan, gunakan tombol <strong>Buat Akun</strong> di kolom "Akun Login" untuk membuatkan akun login nasabah dengan PIN awal.</p>
       <div class="table-scroll" style="padding:0;">
         <table class="price-table compact" id="nasabahTable">
           <thead><tr><th>Nama</th><th>No. Rek</th><th>RT/RW</th><th>Alamat</th><th>Akun Login</th><th></th></tr></thead>
@@ -903,15 +999,13 @@
         </div>
         <button class="btn-mini confirm" id="btnTambahAdmin" style="flex:0 0 auto;">Tambah</button>
       </div>
-      <p class="hint" style="margin-top:8px;">Password awal dibuat otomatis oleh sistem (acak) dan ditampilkan sekali untuk disampaikan ke admin terkait. Tombol "Kirim Reset Password" akan mengirim tautan reset ke email admin — admin membuat password barunya sendiri lewat email tersebut.</p>
+      <p class="hint" style="margin-top:8px;">Tombol "Reset Pswd" akan mengirim tautan reset ke email admin — admin membuat password barunya sendiri lewat email tersebut.</p>
 
-      <h4 style="margin:22px 0 4px; font-size:14px; color:var(--forest-900);">Backup Otomatis Harian</h4>
-      <p class="hint" id="backupFolderStatus" style="margin:0 0 10px;">Belum ada folder dipilih — backup otomatis akan diunduh ke folder Download bawaan browser tiap tengah malam.</p>
+      <h4 style="margin:22px 0 4px; font-size:14px; color:var(--forest-900);">Backup Harian (Server)</h4>
+      <p class="hint" style="margin:0 0 10px;">Backup lengkap dibuat otomatis tiap pukul 00:05 WIB di server.</p>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <button class="btn-mini confirm" id="btnPilihFolderBackup" type="button">📁 Pilih Folder di Komputer Ini</button>
-        <button class="btn-mini cancel" id="btnUjiBackup" type="button">🧪 Coba Backup Sekarang</button>
+        <button class="btn-mini confirm" id="btnUnduhBackupServer" type="button">⬇️ Unduh Backup Terbaru dari Server</button>
       </div>
-      <p class="hint" style="margin-top:8px;">Backup otomatis berjalan tiap pukul 00:00 selama halaman SESAMA ini tetap terbuka di browser (mis. dibiarkan menyala semalaman di komputer kantor). Karena alasan keamanan browser, folder perlu dipilih ulang setiap kali halaman ini dimuat ulang / dibuka baru.</p>
     </div>
     <div class="modal-foot">
       <button class="btn-mini cancel" data-close="modalPengguna">Tutup</button>
@@ -1197,12 +1291,17 @@
     $('btnGantiPassword').style.display = isStaff ? 'inline-block' : 'none';
     $('btnVerifikasi').style.display = isStaff ? 'flex' : 'none';
     $('btnBukaTambah').style.display = isStaff ? 'flex' : 'none';
-    $('btnPdf').style.display = isStaff ? 'flex' : 'none';
-    $('btnJson').style.display = isSuperAdmin ? 'flex' : 'none';
-    $('btnImportJson').style.display = isSuperAdmin ? 'flex' : 'none';
-    $('btnExcel').style.display = isSuperAdmin ? 'flex' : 'none';
-    $('btnKelolaHarga').style.display = isSuperAdmin ? 'flex' : 'none';
     $('btnKelolaPengguna').style.display = isSuperAdmin ? 'flex' : 'none';
+    // Dropdown Aksi: tampil untuk superadmin (berisi Excel, PDF, Kelola Harga, Import JSON, Unduh Backup)
+    // untuk admin biasa hanya tampilkan item PDF
+    $('dropdownAksi').style.display = isStaff ? 'inline-flex' : 'none';
+    // tampilkan/sembunyikan item dropdown sesuai peran
+    $('ddExcel').style.display = isSuperAdmin ? 'flex' : 'none';
+    $('ddKelolaHarga').style.display = isSuperAdmin ? 'flex' : 'none';
+    $('ddImportJson').style.display = isSuperAdmin ? 'flex' : 'none';
+    $('ddUnduhBackupJson').style.display = isSuperAdmin ? 'flex' : 'none';
+    $('ddUnduhBackupServer').style.display = isSuperAdmin ? 'flex' : 'none';
+    $('ddPdf').style.display = isStaff ? 'flex' : 'none';
     $('privacyNote').style.display = 'none';
     $('filterBar').style.display = isStaff ? 'flex' : 'none';
     $('statsGrid').style.display = isNasabah ? 'none' : '';
@@ -1212,14 +1311,8 @@
     renderStats();
     renderLedger();
 
-    // Backup otomatis (tengah malam & saat dibuka) HANYA untuk Super Admin.
-    // Sengaja dijadwalkan di sini (bukan di INIT global) supaya baru berjalan
-    // setelah role pengguna yang login benar-benar diketahui.
-    if(isSuperAdmin && !backupOtomatisSudahDijadwalkan){
-      backupOtomatisSudahDijadwalkan = true;
-      jadwalkanBackupTengahMalam();
-      jalankanBackupSaatDibuka();
-    }
+    // Backup otomatis dari memori browser dinonaktifkan.
+    // Gunakan tombol "Unduh Backup Server" untuk mengunduh backup terbaru dari Supabase Storage.
   }
 
   /* =================== STATS =================== */
@@ -1373,6 +1466,50 @@
     });
   }
 
+  /* =================== DROPDOWN AKSI =================== */
+  (function setupDropdownAksi(){
+    const toggle = $('btnDropdownAksi');
+    const wrapper = $('dropdownAksi');
+    if(!toggle || !wrapper) return;
+
+    toggle.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      wrapper.classList.toggle('open');
+    });
+    document.addEventListener('click', ()=> wrapper.classList.remove('open'));
+
+    // Ekspor Excel
+    $('ddExcel').addEventListener('click', ()=>{
+      wrapper.classList.remove('open');
+      $('btnExcel').click();
+    });
+    // Ekspor PDF
+    $('ddPdf').addEventListener('click', ()=>{
+      wrapper.classList.remove('open');
+      $('btnPdf').click();
+    });
+    // Kelola Daftar Harga
+    $('ddKelolaHarga').addEventListener('click', ()=>{
+      wrapper.classList.remove('open');
+      $('btnKelolaHarga').click();
+    });
+    // Panggil Data JSON
+    $('ddImportJson').addEventListener('click', ()=>{
+      wrapper.classList.remove('open');
+      $('btnImportJson').click();
+    });
+    // Unduh Backup JSON
+    $('ddUnduhBackupJson').addEventListener('click', ()=>{
+      wrapper.classList.remove('open');
+      $('btnJson').click();
+    });
+    // Unduh BackUp Server
+    $('ddUnduhBackupServer').addEventListener('click', ()=>{
+      wrapper.classList.remove('open');
+      unduhBackupTerbaruDariServer($('ddUnduhBackupServer'));
+    });
+  })();
+
   /* =================== MODAL HELPERS =================== */
   function openModal(id){ $(id).classList.add('open'); }
   function closeModal(id){
@@ -1402,8 +1539,7 @@
   }
 
   const fTanggal=$('fTanggal'), fJam=$('fJam'), fJenis=$('fJenis'), fBerat=$('fBerat'),
-        fHargaTampil=$('fHargaTampil'), fTotal=$('fTotal'), fKeterangan=$('fKeterangan'),
-        fNominalTarik=$('fNominalTarik');
+        fHargaTampil=$('fHargaTampil'), fTotal=$('fTotal'), fKeterangan=$('fKeterangan');
 
   function setDefaultDateTime(){
     const now = new Date();
@@ -1424,42 +1560,6 @@
     if(!str) return NaN;
     return parseFloat(str.trim().replace(/\./g,'').replace(',', '.'));
   }
-  function parseNominal(str){
-    if(!str) return NaN;
-    const digits = str.toString().replace(/[^\d]/g,'');
-    return digits ? Number(digits) : NaN;
-  }
-  function formatNominalInput(el){
-    const digits = el.value.replace(/[^\d]/g,'');
-    el.value = digits ? Number(digits).toLocaleString('id-ID') : '';
-  }
-  fNominalTarik.addEventListener('input', ()=>formatNominalInput(fNominalTarik));
-
-  // Hitung saldo bersih (Rp) milik seorang akun nasabah dari seluruh transaksi yang sudah tercatat.
-  function saldoAkun(akun){
-    if(!akun) return 0;
-    return transaksi
-      .filter(t => t.akun && String(t.akun.id) === String(akun.id))
-      .reduce((s,t) => s + (t.tipe === 'setor' ? t.total : -t.total), 0);
-  }
-
-  // Tampilkan saran nominal penarikan (saldo - 5.000, dibulatkan ke bawah ke ribuan terdekat),
-  // atau peringatan jika saldo nasabah kurang dari 5.000.
-  function updateSaranNominalTarik(){
-    const saran = $('saranNominalTarik');
-    if(tipeAktif !== 'tarik' || !selectedAkun){ saran.style.display = 'none'; return; }
-    const saldo = saldoAkun(selectedAkun);
-    if(saldo < 5000){
-      saran.style.color = 'var(--stamp-red)';
-      saran.textContent = `⚠ Saldo tidak mencukupi. Saldo nasabah saat ini: ${rupiah(saldo)}.`;
-      saran.style.display = 'block';
-      return;
-    }
-    const maksSaran = Math.floor((saldo - 5000) / 1000) * 1000;
-    saran.style.color = 'var(--forest-700)';
-    saran.textContent = `💡 Saldo saat ini: ${rupiah(saldo)}. Saran maksimal tarik: ${rupiah(maksSaran)} (sisakan minimal Rp 5.000).`;
-    saran.style.display = 'block';
-  }
   function hitungTotal(){
     const berat = parseBerat(fBerat.value);
     const harga = priceList[fJenis.value] || 0;
@@ -1470,21 +1570,15 @@
   fJenis.addEventListener('change', updateHargaTampil);
   fBerat.addEventListener('input', hitungTotal);
 
-  // Tampilkan field jenis/berat/harga untuk Setor, atau nominal langsung untuk Tarik Saldo.
-  function toggleFieldsByTipe(tipe){
-    const isTarik = tipe === 'tarik';
-    $('fieldJenisSampah').style.display = isTarik ? 'none' : '';
-    $('rowBeratHarga').style.display = isTarik ? 'none' : '';
-    $('totalDisplayWrap').style.display = isTarik ? 'none' : '';
-    $('fieldNominalTarik').style.display = isTarik ? '' : 'none';
-    updateSaranNominalTarik();
-  }
-
   document.querySelectorAll('.stamp-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
+      if(btn.dataset.tipe === 'tarik'){
+        // Buka modal tarik saldo tersendiri, jangan ubah tipeAktif di sini
+        bukaTarikSaldo();
+        return;
+      }
       document.querySelectorAll('.stamp-btn').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active'); tipeAktif = btn.dataset.tipe;
-      toggleFieldsByTipe(tipeAktif);
     });
   });
 
@@ -1504,7 +1598,6 @@
         selectedAkun = n;
         fNasabahSearch.value = `${n.nama} — ${n.rek}`;
         comboList.classList.remove('open');
-        updateSaranNominalTarik();
       });
     });
   }
@@ -1513,7 +1606,6 @@
     selectedAkun = null;
     renderCombo(fNasabahSearch.value);
     comboList.classList.add('open');
-    updateSaranNominalTarik();
   });
   document.addEventListener('click', (e)=>{
     if(!e.target.closest('.field') || !e.target.closest('#fNasabahSearch,#comboList')){
@@ -1522,7 +1614,7 @@
   });
 
   function resetForm(fullReset){
-    fBerat.value=''; fKeterangan.value=''; fTotal.textContent=rupiah(0); fNominalTarik.value='';
+    fBerat.value=''; fKeterangan.value=''; fTotal.textContent=rupiah(0);
     setDefaultDateTime();
     if(fullReset){
       fNasabahSearch.value=''; selectedAkun=null;
@@ -1532,7 +1624,6 @@
       strukSementara = [];
       updateTombolCetakStruk();
     }
-    toggleFieldsByTipe(tipeAktif);
     renderJenisOptions();
   }
 
@@ -1540,11 +1631,13 @@
     editingId = null;
     $('modalTambahTitle').textContent = '＋ Tambah Transaksi';
     $('btnOkRecord').style.display = 'flex';
+    $('okHint').style.display = 'block';
     $('btnSimpanTransaksi').textContent = 'Selesai & Tutup';
   }
   function setModeEdit(){
     $('modalTambahTitle').textContent = '✎ Edit Transaksi';
     $('btnOkRecord').style.display = 'none';
+    $('okHint').style.display = 'none';
     $('btnSimpanTransaksi').textContent = 'Simpan Perubahan';
   }
 
@@ -1608,50 +1701,56 @@
     doc.save(`struk-${akun.rek}-${stamp()}.pdf`);
   });
 
+  // Hitung saldo (setor - tarik) satu nasabah dari data transaksi yang sudah dimuat di client.
+  // `kecualiId` dipakai saat mode edit, supaya transaksi yang sedang diedit tidak ikut dihitung
+  // (karena PATCH akan menggantikan nilainya, bukan menambah baris baru).
+  function hitungSaldoNasabah(nasabahId, kecualiId){
+    let saldo = 0;
+    transaksi.forEach(t=>{
+      if(String(t.akun.id) !== String(nasabahId)) return;
+      if(kecualiId && String(t.id) === String(kecualiId)) return;
+      saldo += (t.tipe==='setor' ? t.total : -t.total);
+    });
+    return saldo;
+  }
+
   // Validasi + simpan satu baris transaksi (tambah baru, atau perbarui jika sedang mode edit).
   async function rekamTransaksi(){
+    const berat = parseBerat(fBerat.value);
     if(!selectedAkun){ alert('Pilih pemilik rekening (nasabah) terlebih dahulu.'); fNasabahSearch.focus(); return false; }
     if(!fTanggal.value){ alert('Tanggal wajib diisi.'); return false; }
     if(!fJam.value){ alert('Jam wajib diisi.'); return false; }
+    if(!fJenis.value){ alert('Pilih jenis sampah.'); return false; }
+    if(isNaN(berat) || berat<=0){ alert('Berat tidak valid. Contoh: 0,75'); fBerat.focus(); return false; }
 
-    let payload;
+    // Cek saldo sebelum penarikan, supaya nasabah tidak diam-diam jadi minus tanpa admin sadar.
+    // Sengaja berupa PERINGATAN + konfirmasi (bukan larangan mutlak), karena kadang penarikan
+    // yang membuat saldo minus memang disengaja admin (mis. koreksi data lama / kasus khusus).
     if(tipeAktif === 'tarik'){
-      const nominal = parseNominal(fNominalTarik.value);
-      if(isNaN(nominal) || nominal<=0){ alert('Nominal penarikan tidak valid. Contoh: 50.000'); fNominalTarik.focus(); return false; }
-      let saldoTersedia = saldoAkun(selectedAkun);
-      if(editingId){
-        // Saat mengedit transaksi tarik yang sudah ada, kembalikan dulu nominal lamanya ke saldo sebelum dicek.
-        const lama = transaksi.find(t=>String(t.id)===editingId);
-        if(lama && lama.tipe==='tarik' && lama.akun && String(lama.akun.id)===String(selectedAkun.id)) saldoTersedia += lama.total;
+      const totalRencana = berat * (priceList[fJenis.value] || 0);
+      const saldoSaatIni = hitungSaldoNasabah(selectedAkun.id, editingId);
+      const saldoSetelah = saldoSaatIni - totalRencana;
+      if(saldoSetelah < 0){
+        const lanjut = confirm(
+          `Saldo ${selectedAkun.nama} saat ini ${rupiah(saldoSaatIni)}.\n`+
+          `Penarikan ${rupiah(totalRencana)} akan membuat saldo menjadi ${rupiah(saldoSetelah)} (minus).\n\n`+
+          `Tetap lanjutkan transaksi ini?`
+        );
+        if(!lanjut) return false;
       }
-      if(saldoTersedia < 5000){ alert('Saldo tidak mencukupi.'); fNominalTarik.focus(); return false; }
-      if(nominal > saldoTersedia){ alert(`Saldo tidak mencukupi. Saldo tersedia: ${rupiah(saldoTersedia)}.`); fNominalTarik.focus(); return false; }
-      payload = {
-        nasabah_id: selectedAkun.id,
-        tanggal: fTanggal.value,
-        jam: fJam.value,
-        jenis_nama: 'Tarik Saldo',
-        berat_kg: nominal,
-        harga_kg: 1,
-        tipe: tipeAktif,
-        keterangan: fKeterangan.value.trim() || null
-      };
-    } else {
-      const berat = parseBerat(fBerat.value);
-      if(!fJenis.value){ alert('Pilih jenis sampah.'); return false; }
-      if(isNaN(berat) || berat<=0){ alert('Berat tidak valid. Contoh: 0,75'); fBerat.focus(); return false; }
-      hitungTotal(); // sekadar refresh tampilan total; nilai sesungguhnya dihitung server (kolom generated)
-      payload = {
-        nasabah_id: selectedAkun.id,
-        tanggal: fTanggal.value, // input type=date sudah dalam format ISO yyyy-mm-dd
-        jam: fJam.value,
-        jenis_nama: fJenis.value,
-        berat_kg: berat,
-        harga_kg: priceList[fJenis.value],
-        tipe: tipeAktif,
-        keterangan: fKeterangan.value.trim() || null
-      };
     }
+
+    hitungTotal(); // sekadar refresh tampilan total; nilai sesungguhnya dihitung server (kolom generated)
+    const payload = {
+      nasabah_id: selectedAkun.id,
+      tanggal: fTanggal.value, // input type=date sudah dalam format ISO yyyy-mm-dd
+      jam: fJam.value,
+      jenis_nama: fJenis.value,
+      berat_kg: berat,
+      harga_kg: priceList[fJenis.value],
+      tipe: tipeAktif,
+      keterangan: fKeterangan.value.trim() || null
+    };
 
     try{
       if(editingId){
@@ -1695,22 +1794,13 @@
     fJam.value = t.jam;
     selectedAkun = t.akun;
     fNasabahSearch.value = `${t.akun.nama} — ${t.akun.rek}`;
+    fJenis.value = t.jenis;
+    updateHargaTampil();
+    fBerat.value = String(t.beratKg).replace('.', ',');
+    hitungTotal();
+    fKeterangan.value = t.keterangan;
     document.querySelectorAll('.stamp-btn').forEach(b=>b.classList.toggle('active', b.dataset.tipe===t.tipe));
     tipeAktif = t.tipe;
-    toggleFieldsByTipe(tipeAktif);
-    if(t.tipe === 'tarik'){
-      fNominalTarik.value = Number(t.total).toLocaleString('id-ID');
-      fJenis.value = t.jenis; updateHargaTampil();
-      fBerat.value = String(t.beratKg).replace('.', ',');
-      hitungTotal();
-    } else {
-      fJenis.value = t.jenis;
-      updateHargaTampil();
-      fBerat.value = String(t.beratKg).replace('.', ',');
-      hitungTotal();
-      fNominalTarik.value = '';
-    }
-    fKeterangan.value = t.keterangan;
     setModeEdit();
     openModal('modalTambah');
   }
@@ -1722,7 +1812,6 @@
     if(await rekamTransaksi()){
       resetForm(false);
       selectedAkun = akunSaatIni;
-      updateSaranNominalTarik();
       showToast(`Tersimpan untuk ${akunSaatIni.nama}. Siap tambah transaksi berikutnya.`);
       fBerat.focus();
     }
@@ -1740,12 +1829,151 @@
       $('btnSimpanTransaksi').disabled = false;
       return;
     }
-    const adaIsian = tipeAktif === 'tarik' ? fNominalTarik.value.trim() !== '' : fBerat.value.trim() !== '';
+    const adaIsian = fBerat.value.trim() !== '';
     if(adaIsian){
       if(!(await rekamTransaksi())){ $('btnSimpanTransaksi').disabled = false; return; }
     }
     closeModal('modalTambah');
     $('btnSimpanTransaksi').disabled = false;
+  });
+
+  /* =================== MODAL TARIK SALDO =================== */
+  const SALDO_MINIMUM = 5000; // sisa saldo minimal setelah penarikan
+
+  function bukaTarikSaldo(){
+    if(!selectedAkun){
+      alert('Pilih pemilik rekening (nasabah) terlebih dahulu sebelum menarik saldo.');
+      return;
+    }
+    // Isi info nasabah
+    $('tarikNasabahInfo').textContent = selectedAkun.nama + ' — ' + selectedAkun.rek;
+
+    // Isi tanggal & jam default
+    const now = new Date();
+    $('tarikTanggal').value = now.toISOString().slice(0,10);
+    $('tarikJam').value = now.toTimeString().slice(0,5);
+
+    // Reset input
+    $('tarikNominal').value = '';
+    $('tarikKeterangan').value = '';
+
+    // Tampilkan saldo saat ini & reset tampilan bilah
+    const saldoSaatIni = hitungSaldoNasabah(selectedAkun.id, null);
+    const displayEl = $('tarikSaldoDisplay');
+    $('tarikSaldoSaatIni').textContent = rupiah(saldoSaatIni);
+    displayEl.querySelector('.lbl').textContent = 'Saldo Saat Ini';
+    displayEl.style.background = '';
+    displayEl.style.borderColor = '';
+    $('tarikSaldoSaatIni').style.color = '';
+    displayEl.querySelector('.lbl').style.color = '';
+
+    openModal('modalTarikSaldo');
+    setTimeout(()=> $('tarikNominal').focus(), 120);
+  }
+
+  function hitungSisaSaldoTarik(){
+    if(!selectedAkun) return;
+    const saldoSaatIni = hitungSaldoNasabah(selectedAkun.id, null);
+    const nominal = parseInt(($('tarikNominal').value||'').replace(/\D/g,''), 10) || 0;
+    const sisa = saldoSaatIni - nominal;
+
+    const merah = 'var(--stamp-red,#c0392b)';
+    const hijau = 'var(--stamp-green,#2e6b4c)';
+    const bgMerah = 'var(--stamp-red-bg,#fdf0ee)';
+    const bgHijau = 'var(--stamp-green-bg,#edf6f1)';
+    const displayEl = $('tarikSaldoDisplay');
+    const valEl = $('tarikSaldoSaatIni');
+    const lblEl = displayEl.querySelector('.lbl');
+
+    if(nominal > 0){
+      // Tampilkan sisa saldo dengan label & warna dinamis
+      valEl.textContent = rupiah(sisa);
+      lblEl.textContent = 'Sisa Saldo Setelah Tarik';
+      if(sisa < SALDO_MINIMUM){
+        displayEl.style.background = bgMerah;
+        displayEl.style.borderColor = merah;
+        valEl.style.color = merah;
+        lblEl.style.color = merah;
+      } else {
+        displayEl.style.background = bgHijau;
+        displayEl.style.borderColor = hijau;
+        valEl.style.color = hijau;
+        lblEl.style.color = hijau;
+      }
+    } else {
+      // Nominal kosong: kembalikan ke tampilan saldo awal
+      valEl.textContent = rupiah(saldoSaatIni);
+      lblEl.textContent = 'Saldo Saat Ini';
+      displayEl.style.background = '';
+      displayEl.style.borderColor = '';
+      valEl.style.color = '';
+      lblEl.style.color = '';
+    }
+
+    // Tampilkan batas maksimal di hint
+    const maksimal = saldoSaatIni - SALDO_MINIMUM;
+    $('tarikHint').innerHTML = `Sisa saldo setelah tarik minimal <strong>Rp 5.000</strong>. Maksimal tarik: <strong>${rupiah(maksimal)}</strong>.`;
+  }
+
+  $('tarikNominal').addEventListener('input', hitungSisaSaldoTarik);
+
+  $('btnSimpanTarik').addEventListener('click', async ()=>{
+    if(!selectedAkun){ alert('Nasabah tidak ditemukan.'); return; }
+    if(!$('tarikTanggal').value){ alert('Tanggal wajib diisi.'); return; }
+    if(!$('tarikJam').value){ alert('Jam wajib diisi.'); return; }
+
+    const nominal = parseInt(($('tarikNominal').value||'').replace(/\D/g,''), 10) || 0;
+    if(nominal <= 0){ alert('Nominal penarikan harus lebih dari Rp 0.'); $('tarikNominal').focus(); return; }
+
+    const saldoSaatIni = hitungSaldoNasabah(selectedAkun.id, null);
+    const sisa = saldoSaatIni - nominal;
+
+    if(sisa < SALDO_MINIMUM){
+      const maksimal = saldoSaatIni - SALDO_MINIMUM;
+      alert(
+        `Penarikan melebihi batas.\n\nSaldo saat ini: ${rupiah(saldoSaatIni)}\n` +
+        `Sisa setelah tarik: ${rupiah(sisa)}\n\n` +
+        `Maksimal penarikan: ${rupiah(maksimal)} (harus menyisakan ${rupiah(SALDO_MINIMUM)}).`
+      );
+      $('tarikNominal').focus();
+      return;
+    }
+
+    // Untuk menyimpan tarik nominal, kita gunakan jenis_nama='TARIK TUNAI', berat_kg=1, harga_kg=nominal
+    // sehingga total = berat_kg * harga_kg = 1 * nominal = nominal
+    const payload = {
+      nasabah_id: selectedAkun.id,
+      tanggal: $('tarikTanggal').value,
+      jam: $('tarikJam').value,
+      jenis_nama: 'TARIK TUNAI',
+      berat_kg: 1,
+      harga_kg: nominal,
+      tipe: 'tarik',
+      keterangan: $('tarikKeterangan').value.trim() || null,
+      dibuat_oleh: session ? session.user_id : null
+    };
+
+    $('btnSimpanTarik').disabled = true;
+    try{
+      const inserted = await supabaseRest('transaksi', {
+        method:'POST',
+        headers:{'Prefer':'return=representation'},
+        body: JSON.stringify(payload)
+      });
+      const barisBaru = baris2Transaksi(inserted[0], selectedAkun);
+      transaksi.unshift(barisBaru);
+      strukSementara.push(barisBaru);
+      updateTombolCetakStruk();
+      renderStats();
+      renderLedger();
+      closeModal('modalTarikSaldo');
+      showToast(`Penarikan ${rupiah(nominal)} untuk ${selectedAkun.nama} berhasil disimpan.`);
+    } catch(err){
+      console.error('Gagal simpan tarik saldo:', err);
+      alert('Terjadi kesalahan saat menyimpan penarikan. Silakan coba lagi.');
+    } finally {
+      $('btnSimpanTarik').disabled = false;
+    }
   });
 
   /* =================== KELOLA HARGA MODAL (Super Admin) =================== */
@@ -2029,7 +2257,7 @@ PIN baru minimal 6 digit angka:`, '123456');
 
   async function loadAdminList(){
     try{
-      const rows = await supabaseRest('profiles?select=id,nama,email,role&order=nama.asc');
+      const rows = await supabaseRest('profiles?select=id,nama,email,role&role=in.(admin,superadmin)&order=nama.asc');
       adminList = rows;
     }catch(err){
       alert('Gagal memuat daftar pengguna staf: ' + err.message);
@@ -2037,8 +2265,11 @@ PIN baru minimal 6 digit angka:`, '123456');
   }
 
   function renderAdminTable(){
-    const jumlahSuperAdmin = adminList.filter(a=>a.role==='superadmin').length;
-    $('adminTableBody').innerHTML = adminList.map(a=>{
+    // Jaga-jaga: pastikan baris nasabah tidak pernah ikut tertampil di tabel Akun Admin,
+    // meskipun query di loadAdminList() sudah memfilter role di sisi server.
+    const daftarStaf = adminList.filter(a=>a.role==='admin'||a.role==='superadmin');
+    const jumlahSuperAdmin = daftarStaf.filter(a=>a.role==='superadmin').length;
+    $('adminTableBody').innerHTML = daftarStaf.map(a=>{
       const diriSendiri = session && a.id===session.user_id;
       const superAdminTerakhir = a.role==='superadmin' && jumlahSuperAdmin<=1;
       return `
@@ -2168,6 +2399,39 @@ PIN baru minimal 6 digit angka:`, '123456');
   });
 
   // Panggil (impor) data dari file backup JSON — khusus Super Admin
+  // Mendukung 2 format:
+  //   A) Format backup klien: { daftar_harga:{...}, transaksi:[{akun:"Nama — Rek", tanggal:"DD/MM/YYYY", ...}] }
+  //   B) Format backup server (Edge Function backup-harian): sama persis dengan format A —
+  //      Edge Function harus menghasilkan payload dengan struktur identik (lihat komentar di bawah).
+  //
+  // Agar file dari server langsung kompatibel, Edge Function `backup-harian` harus menyimpan:
+  //   {
+  //     "diekspor_pada": <ISO string>,
+  //     "jenis_backup": "otomatis-harian",
+  //     "daftar_harga": { "<nama_jenis>": <harga_per_kg>, ... },
+  //     "transaksi": [
+  //       {
+  //         "akun": "<nama_nasabah> — <no_rekening>",   ← string, bukan objek
+  //         "tanggal": "DD/MM/YYYY",                    ← format tampil, bukan ISO
+  //         "jam": "HH:MM",
+  //         "jenis": "<nama_jenis_sampah>",
+  //         "beratKg": <number>,
+  //         "hargaKg": <number>,
+  //         "total": <number>,
+  //         "tipe": "setor"|"tarik",
+  //         "keterangan": "<string|null>"
+  //       }, ...
+  //     ]
+  //   }
+  //
+  // Parser di bawah juga menerima format alternatif jika akun berupa objek ({rek, nama})
+  // atau tanggal dalam format ISO (YYYY-MM-DD), sehingga tetap toleran terhadap variasi minor.
+  // Helper: normalisasi teks untuk pencocokan akun saat impor —
+  // supaya beda kapitalisasi atau spasi berlebih tidak dianggap "tidak cocok".
+  function normTeks(s){
+    return String(s||'').toLowerCase().trim().replace(/\s+/g,' ');
+  }
+
   $('btnImportJson').addEventListener('click', ()=> $('inputImportJson').click());
   $('inputImportJson').addEventListener('change', async (e)=>{
     const file = e.target.files[0];
@@ -2182,7 +2446,33 @@ PIN baru minimal 6 digit angka:`, '123456');
       return;
     }
 
-    let jumlahHargaBaru = 0, jumlahTransaksi = 0, jumlahDilewati = 0;
+    // Validasi ringan: harus ada minimal satu kunci yang dikenal
+    if(!payload.daftar_harga && !Array.isArray(payload.transaksi)){
+      alert('Format file tidak dikenali. Pastikan file berasal dari backup SESAMA (klien atau server).');
+      $('inputImportJson').value = '';
+      return;
+    }
+
+    let jumlahHargaBaru = 0, jumlahTransaksi = 0, jumlahDilewati = 0, jumlahDuplikat = 0;
+    const rincianDilewati = []; // catatan baris & alasan, supaya tidak lagi "buta" saat ada yang gagal
+
+    // Kunci unik untuk deteksi duplikat: akun + tanggal + jam + jenis + berat + harga + tipe.
+    // Dibuat dari data transaksi yang SUDAH ada di aplikasi (array `transaksi`, sudah lengkap
+    // sejak login), jadi tidak perlu request tambahan ke server untuk mengecek duplikat.
+    function kunciDuplikat(akunId, tglDisplay, jam, jenis, beratKg, hargaKg, tipe){
+      return [
+        akunId,
+        tglDisplay,
+        (jam||'').slice(0,5),
+        normTeks(jenis),
+        Number(beratKg).toFixed(3),
+        Number(hargaKg).toFixed(3),
+        normTeks(tipe)
+      ].join('|');
+    }
+    const kunciTransaksiTersimpan = new Set(
+      transaksi.map(t => kunciDuplikat(t.akun && t.akun.id, t.tanggal, t.jam, t.jenis, t.beratKg, t.hargaKg, t.tipe))
+    );
 
     // 1) Daftar harga: hanya tambahkan jenis yang BELUM ada (tidak menimpa harga yang sedang berlaku)
     if(payload.daftar_harga && typeof payload.daftar_harga === 'object'){
@@ -2204,34 +2494,103 @@ PIN baru minimal 6 digit angka:`, '123456');
 
     // 2) Transaksi: hanya diimpor kalau nasabahnya sudah terdaftar di sistem (tidak membuat nasabah palsu)
     if(Array.isArray(payload.transaksi)){
-      for(const t of payload.transaksi){
+      for(let i=0; i<payload.transaksi.length; i++){
+        const t = payload.transaksi[i];
         let akunObj = null;
+        let akunLabel = '(akun kosong)';
+
+        // Resolusi akun — mendukung string "Nama — Rek" (format klien & server) maupun objek.
+        // Pencocokan dibuat toleran: tidak peduli besar/kecil huruf, dan spasi berlebih diabaikan.
         if(typeof t.akun === 'string'){
-          const [nama, rek] = t.akun.split(' — ').map(s=>(s||'').trim());
-          akunObj = nasabahList.find(n=>n.rek===rek) || nasabahList.find(n=>n.nama===nama);
+          // Format: "Nama Nasabah — BS-0001"
+          const parts = t.akun.split(' — ').map(s=>(s||'').trim());
+          const rek = parts[1] || '';
+          const nama = parts[0] || '';
+          akunLabel = t.akun;
+          akunObj = (rek && nasabahList.find(n=>normTeks(n.rek)===normTeks(rek)))
+                 || (nama && nasabahList.find(n=>normTeks(n.nama)===normTeks(nama)))
+                 || null;
         } else if(t.akun && typeof t.akun === 'object'){
-          akunObj = nasabahList.find(n=>n.rek===t.akun.rek) || nasabahList.find(n=>n.nama===t.akun.nama);
+          akunLabel = t.akun.nama || t.akun.rek || akunLabel;
+          akunObj = (t.akun.rek && nasabahList.find(n=>normTeks(n.rek)===normTeks(t.akun.rek)))
+                 || (t.akun.nama && nasabahList.find(n=>normTeks(n.nama)===normTeks(t.akun.nama)))
+                 || null;
         }
-        if(!akunObj || !t.tanggal || !t.jam || !t.jenis || !t.beratKg || !t.tipe){ jumlahDilewati++; continue; }
+
+        // Normalisasi nama field — mendukung camelCase (klien) dan snake_case (server alternatif)
+        const tgl     = t.tanggal   || t.tanggal_transaksi || '';
+        const jam     = (t.jam      || t.jam_transaksi || '').slice(0,5);
+        const jenis   = t.jenis     || t.jenis_nama || t.jenis_sampah || '';
+        const beratKg = Number(t.beratKg ?? t.berat_kg ?? 0);
+        const hargaKg = Number(t.hargaKg ?? t.harga_kg ?? 0);
+        // Catatan: kolom "total" di tabel transaksi dihitung otomatis oleh database (generated column),
+        // jadi TIDAK dikirim manual di sini — mengirimnya akan ditolak server.
+        const tipe    = t.tipe || '';
+        const ket     = t.keterangan || null;
+
+        // Kumpulkan SEMUA alasan (bukan cuma yang pertama), supaya rincian akhir jelas dan tidak menebak-nebak.
+        const sebab = [];
+        if(!akunObj) sebab.push(`akun "${akunLabel}" tidak ditemukan di daftar nasabah`);
+        if(!tgl) sebab.push('tanggal kosong');
+        if(!jam) sebab.push('jam kosong');
+        if(!jenis) sebab.push('jenis sampah kosong');
+        if(!beratKg) sebab.push('berat (kg) kosong atau nol');
+        if(!tipe) sebab.push('tipe transaksi (setor/tarik) kosong');
+
+        if(sebab.length){
+          jumlahDilewati++;
+          rincianDilewati.push(`Baris ${i+1}: ${sebab.join('; ')}`);
+          continue;
+        }
+
+        // Tanggal bisa DD/MM/YYYY (format tampil) atau YYYY-MM-DD (ISO)
+        const isoTanggal = /^\d{4}-\d{2}-\d{2}/.test(tgl)
+          ? tgl.slice(0,10)
+          : displayDateToIso(tgl);
+        const tglDisplay = isoToDisplayDate(isoTanggal);
+        const hargaFinal = hargaKg || priceList[jenis] || 0;
+
+        // Cek duplikat persis terhadap data yang sudah tersimpan — dilewati diam-diam
+        // (dihitung terpisah, bukan digabung ke kategori "gagal/data tidak lengkap").
+        const kunciBaris = kunciDuplikat(akunObj.id, tglDisplay, jam, jenis, beratKg, hargaFinal, tipe);
+        if(kunciTransaksiTersimpan.has(kunciBaris)){
+          jumlahDuplikat++;
+          continue;
+        }
+
         try{
-          const isoTanggal = /^\d{4}-\d{2}-\d{2}$/.test(t.tanggal) ? t.tanggal : displayDateToIso(t.tanggal);
           const inserted = await supabaseRest('transaksi', {
             method:'POST', headers:{'Prefer':'return=representation'},
             body: JSON.stringify({
-              nasabah_id: akunObj.id, tanggal: isoTanggal, jam: t.jam, jenis_nama: t.jenis,
-              berat_kg: Number(t.beratKg), harga_kg: Number(t.hargaKg)||priceList[t.jenis]||0,
-              tipe: t.tipe, keterangan: t.keterangan || null,
+              nasabah_id: akunObj.id, tanggal: isoTanggal, jam,
+              jenis_nama: jenis,
+              berat_kg: beratKg,
+              harga_kg: hargaFinal,
+              tipe,
+              keterangan: ket || null,
               dibuat_oleh: session ? session.user_id : null
             })
           });
           transaksi.unshift(baris2Transaksi(inserted[0], akunObj));
+          kunciTransaksiTersimpan.add(kunciBaris); // cegah duplikat lain di file yang sama pada baris berikutnya
           jumlahTransaksi++;
-        }catch(err){ jumlahDilewati++; }
+        }catch(err){
+          jumlahDilewati++;
+          rincianDilewati.push(`Baris ${i+1} (akun "${akunLabel}"): gagal disimpan ke server — ${err.message}`);
+        }
       }
       renderStats(); renderLedger();
     }
 
-    alert(`Impor selesai.\n• ${jumlahTransaksi} transaksi tersimpan ke server\n• ${jumlahHargaBaru} jenis harga baru ditambahkan\n• ${jumlahDilewati} baris dilewati (nasabah tidak ditemukan atau data tidak lengkap)`);
+    let pesanImpor = `Impor selesai.\n• ${jumlahTransaksi} transaksi tersimpan ke server\n• ${jumlahHargaBaru} jenis harga baru ditambahkan\n• ${jumlahDuplikat} baris dilewati karena duplikat (sudah ada persis sama)\n• ${jumlahDilewati} baris dilewati (gagal/data tidak lengkap)`;
+    if(rincianDilewati.length){
+      const batasTampil = 15;
+      pesanImpor += '\n\nRincian baris yang dilewati:\n' + rincianDilewati.slice(0, batasTampil).map(s=>'- '+s).join('\n');
+      if(rincianDilewati.length > batasTampil){
+        pesanImpor += `\n... dan ${rincianDilewati.length - batasTampil} baris lainnya (lihat file backup untuk detail lengkap).`;
+      }
+    }
+    alert(pesanImpor);
     $('inputImportJson').value = '';
   });
 
@@ -3052,29 +3411,56 @@ PIN baru minimal 6 digit angka:`, '123456');
       : 'Belum ada folder dipilih — backup otomatis akan diunduh ke folder Download bawaan browser tiap tengah malam.';
   }
 
-  $('btnPilihFolderBackup').addEventListener('click', async ()=>{
-    if(!window.showDirectoryPicker){
-      alert('Browser ini belum mendukung pemilihan folder langsung (fitur ini didukung Chrome/Edge versi baru di desktop). Sebagai gantinya, backup otomatis tetap berjalan dan akan diunduh ke folder Download bawaan browser.');
+  // Unduh salinan backup TERBARU dari Storage server (bucket backup-sesama) ke komputer ini.
+  // Pakai sesi login Super Admin yang sedang aktif — akses diperiksa ulang oleh RLS di server
+  // (kebijakan "superadmin_baca_backup"), jadi walau tombol ini entah bagaimana dipanggil oleh
+  // peran lain, server tetap menolaknya.
+  async function unduhBackupTerbaruDariServer(pemanggilTombol){
+    if(currentRole !== 'superadmin'){
+      alert('Hanya Super Admin yang dapat mengunduh backup server.');
       return;
     }
+    // Tampilkan status pada tombol pemanggil (bisa dari modal atau dari dropdown)
+    const tombolModal = $('btnUnduhBackupServer');
+    const tombolDropdown = $('ddUnduhBackupServer');
+    const daftarTombol = [tombolModal, tombolDropdown, pemanggilTombol].filter(Boolean);
+    const labelAsliMap = daftarTombol.map(b => ({ el:b, label:b.textContent, disabled:b.disabled }));
+    daftarTombol.forEach(b => { b.disabled = true; });
+    if(tombolModal) tombolModal.textContent = 'Mencari file terbaru…';
+    if(tombolDropdown) tombolDropdown.childNodes[tombolDropdown.childNodes.length-1].textContent = ' Mencari…';
     try{
-      const handle = await window.showDirectoryPicker();
-      const izin = await handle.requestPermission({ mode:'readwrite' });
-      if(izin !== 'granted'){ alert('Izin akses folder ditolak, folder tidak diaktifkan.'); return; }
-      backupDirHandle = handle;
-      backupFolderName = handle.name;
-      updateBackupStatus();
-      alert(`Folder backup diatur ke "${handle.name}". Backup otomatis akan tersimpan ke folder ini setiap pukul 00:00 selama halaman SESAMA ini tetap terbuka.`);
+      const token = (session && session.access_token) || SUPABASE_ANON_KEY;
+      const headersDasar = { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${token}` };
+
+      // 1) Daftar isi bucket, urut dari yang paling baru
+      const resList = await fetch(`${SUPABASE_URL}/storage/v1/object/list/backup-sesama`, {
+        method: 'POST',
+        headers: { ...headersDasar, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prefix:'', limit:1, sortBy:{ column:'name', order:'desc' } })
+      });
+      if(!resList.ok) throw new Error(`Gagal membaca daftar backup di server (${resList.status}).`);
+      const daftar = await resList.json();
+      if(!daftar || !daftar.length) throw new Error('Belum ada file backup di server. Coba lagi setelah lewat pukul 00:05 WIB.');
+      const namaFile = daftar[0].name;
+
+      // 2) Unduh isi file tersebut
+      if(tombolModal) tombolModal.textContent = 'Mengunduh…';
+      const resFile = await fetch(`${SUPABASE_URL}/storage/v1/object/backup-sesama/${encodeURIComponent(namaFile)}`, { headers: headersDasar });
+      if(!resFile.ok) throw new Error(`Gagal mengunduh file backup (${resFile.status}).`);
+      const blob = await resFile.blob();
+      downloadBlob(blob, namaFile);
     }catch(err){
-      if(err.name !== 'AbortError') alert('Gagal memilih folder: ' + err.message);
+      alert('Gagal mengunduh backup dari server: ' + err.message);
+    }finally{
+      labelAsliMap.forEach(item => { item.el.disabled = item.disabled; item.el.textContent = item.label; });
     }
-  });
+  }
+  $('btnUnduhBackupServer').addEventListener('click', ()=> unduhBackupTerbaruDariServer());
 
   async function jalankanBackupOtomatis(namaFileTetap){
-    if(currentRole !== 'superadmin'){
-      console.warn('Backup otomatis dibatalkan: hanya Super Admin yang boleh menjalankan backup.');
-      return;
-    }
+    // Backup otomatis dari memori browser dinonaktifkan.
+    // Gunakan unduhBackupTerbaruDariServer() untuk backup dari Supabase Storage.
+    return;
     try{
       // Ambil data paling baru dulu supaya isi backup benar-benar mutakhir
       await loadJenisHarga();
@@ -3111,15 +3497,6 @@ PIN baru minimal 6 digit angka:`, '123456');
     }
   }
 
-  $('btnUjiBackup').addEventListener('click', async ()=>{
-    if(currentRole !== 'superadmin'){
-      alert('Hanya Super Admin yang dapat menjalankan backup.');
-      return;
-    }
-    await jalankanBackupOtomatis();
-    alert('Backup uji coba selesai. Cek folder yang dipilih (atau folder Download browser jika belum memilih folder).');
-  });
-
   function jadwalkanBackupTengahMalam(){
     const sekarang = new Date();
     const tengahMalamBerikutnya = new Date(
@@ -3134,8 +3511,7 @@ PIN baru minimal 6 digit angka:`, '123456');
 
   // Backup ringkas setiap SESAMA dibuka/dinyalakan — nama file TETAP, menimpa backup "saat dibuka" sebelumnya.
   // Dibatasi maksimal 1x per hari (walau dibuka/refresh berkali-kali) supaya folder Download tidak
-  // kebanjiran file duplikat. Tombol "Coba Backup Sekarang" di Kelola Pengguna tetap bisa dipakai kapan saja
-  // tanpa batasan ini, untuk backup manual sewaktu-waktu.
+  // kebanjiran file duplikat.
   const KUNCI_TANGGAL_BACKUP_DIBUKA = 'sesama_backup_saat_dibuka_tanggal';
   function jalankanBackupSaatDibuka(){
     const hariIni = new Date().toISOString().slice(0,10); // yyyy-mm-dd
