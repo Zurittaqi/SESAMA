@@ -841,21 +841,15 @@
     <div class="modal-body">
 
       <div class="field" style="margin-bottom:14px;">
-        <label>Pemilik Rekening (Nasabah)</label>
-        <div id="tarikNasabahInfo" style="
-          padding:10px 14px;
-          background:var(--surface-2,#f4f4f2);
-          border:1px solid var(--line);
-          border-radius:8px;
-          font-weight:600;
-          font-size:14px;
-          color:var(--fg);
-        ">—</div>
+        <label for="tarikNasabahSearch">Pemilik Rekening (Nasabah)</label>
+        <input type="text" id="tarikNasabahSearch" placeholder="Cari nama nasabah / nomor rekening..." autocomplete="off">
+        <div class="combo-list" id="tarikComboList"></div>
+        <span class="hint">Ketik untuk mencari, atau klik untuk melihat semua nasabah.</span>
       </div>
 
       <div class="field" style="margin-bottom:14px;">
         <label for="tarikNominal">Nominal Penarikan</label>
-        <input type="text" id="tarikNominal" placeholder="contoh 50000" inputmode="numeric" autocomplete="off"
+        <input type="text" id="tarikNominal" placeholder="contoh 50.000" inputmode="numeric" autocomplete="off"
           style="font-size:18px; font-weight:700; letter-spacing:.02em;">
         <span class="hint" id="tarikHint">Sisa saldo setelah tarik minimal <strong>Rp 5.000</strong>.</span>
       </div>
@@ -1840,13 +1834,69 @@
   /* =================== MODAL TARIK SALDO =================== */
   const SALDO_MINIMUM = 5000; // sisa saldo minimal setelah penarikan
 
-  function bukaTarikSaldo(){
-    if(!selectedAkun){
-      alert('Pilih pemilik rekening (nasabah) terlebih dahulu sebelum menarik saldo.');
-      return;
+  // Nasabah yang sedang dipilih di modal tarik saldo (terpisah dari selectedAkun modal utama)
+  let tarikSelectedAkun = null;
+
+  function renderTarikCombo(filter){
+    const q = (filter||'').toLowerCase().trim();
+    const tarikComboList = $('tarikComboList');
+    const matches = nasabahList.filter(n => !q || n.nama.toLowerCase().includes(q) || n.rek.toLowerCase().includes(q));
+    tarikComboList.innerHTML = matches.length
+      ? matches.map(n=>`
+          <div class="combo-item" data-tarik-id="${n.id}">
+            ${escapeHtml(n.nama)}
+            <div class="sub mono">${n.rek}</div>
+          </div>`).join('')
+      : `<div class="combo-empty">Nasabah tidak ditemukan.</div>`;
+    tarikComboList.querySelectorAll('.combo-item').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const n = nasabahList.find(x=>String(x.id)===el.dataset.tarikId);
+        tarikSelectedAkun = n;
+        $('tarikNasabahSearch').value = `${n.nama} — ${n.rek}`;
+        tarikComboList.classList.remove('open');
+        refreshTarikSaldoDisplay();
+        hitungSisaSaldoTarik();
+        setTimeout(()=> $('tarikNominal').focus(), 80);
+      });
+    });
+  }
+
+  function refreshTarikSaldoDisplay(){
+    if(!tarikSelectedAkun) return;
+    const saldoSaatIni = hitungSaldoNasabah(tarikSelectedAkun.id, null);
+    const displayEl = $('tarikSaldoDisplay');
+    $('tarikSaldoSaatIni').textContent = rupiah(saldoSaatIni);
+    displayEl.querySelector('.lbl').textContent = 'Saldo Saat Ini';
+    displayEl.style.background = '';
+    displayEl.style.borderColor = '';
+    $('tarikSaldoSaatIni').style.color = '';
+    displayEl.querySelector('.lbl').style.color = '';
+    $('tarikNominal').value = '';
+  }
+
+  $('tarikNasabahSearch').addEventListener('focus', ()=>{
+    renderTarikCombo('');
+    $('tarikComboList').classList.add('open');
+  });
+  $('tarikNasabahSearch').addEventListener('input', ()=>{
+    tarikSelectedAkun = null;
+    renderTarikCombo($('tarikNasabahSearch').value);
+    $('tarikComboList').classList.add('open');
+  });
+  document.addEventListener('click', (e)=>{
+    if(!e.target.closest('#tarikNasabahSearch') && !e.target.closest('#tarikComboList')){
+      $('tarikComboList').classList.remove('open');
     }
-    // Isi info nasabah
-    $('tarikNasabahInfo').textContent = selectedAkun.nama + ' — ' + selectedAkun.rek;
+  });
+
+  function bukaTarikSaldo(){
+    // Isi combobox dengan nasabah dari modal utama jika sudah dipilih, atau kosong
+    tarikSelectedAkun = selectedAkun || null;
+    if(tarikSelectedAkun){
+      $('tarikNasabahSearch').value = `${tarikSelectedAkun.nama} — ${tarikSelectedAkun.rek}`;
+    } else {
+      $('tarikNasabahSearch').value = '';
+    }
 
     // Isi tanggal & jam default
     const now = new Date();
@@ -1857,23 +1907,26 @@
     $('tarikNominal').value = '';
     $('tarikKeterangan').value = '';
 
-    // Tampilkan saldo saat ini & reset tampilan bilah
-    const saldoSaatIni = hitungSaldoNasabah(selectedAkun.id, null);
-    const displayEl = $('tarikSaldoDisplay');
-    $('tarikSaldoSaatIni').textContent = rupiah(saldoSaatIni);
-    displayEl.querySelector('.lbl').textContent = 'Saldo Saat Ini';
-    displayEl.style.background = '';
-    displayEl.style.borderColor = '';
-    $('tarikSaldoSaatIni').style.color = '';
-    displayEl.querySelector('.lbl').style.color = '';
+    // Tampilkan saldo nasabah terpilih (jika ada)
+    if(tarikSelectedAkun){
+      refreshTarikSaldoDisplay();
+    } else {
+      $('tarikSaldoSaatIni').textContent = 'Rp 0';
+      $('tarikSaldoDisplay').querySelector('.lbl').textContent = 'Saldo Saat Ini';
+    }
 
     openModal('modalTarikSaldo');
-    setTimeout(()=> $('tarikNominal').focus(), 120);
+    hitungSisaSaldoTarik(); // refresh hint "Maksimal tarik"
+    if(!tarikSelectedAkun){
+      setTimeout(()=> $('tarikNasabahSearch').focus(), 120);
+    } else {
+      setTimeout(()=> $('tarikNominal').focus(), 120);
+    }
   }
 
   function hitungSisaSaldoTarik(){
-    if(!selectedAkun) return;
-    const saldoSaatIni = hitungSaldoNasabah(selectedAkun.id, null);
+    if(!tarikSelectedAkun) return;
+    const saldoSaatIni = hitungSaldoNasabah(tarikSelectedAkun.id, null);
     const nominal = parseInt(($('tarikNominal').value||'').replace(/\D/g,''), 10) || 0;
     const sisa = saldoSaatIni - nominal;
 
@@ -1915,17 +1968,22 @@
     $('tarikHint').innerHTML = `Sisa saldo setelah tarik minimal <strong>Rp 5.000</strong>. Maksimal tarik: <strong>${rupiah(maksimal)}</strong>.`;
   }
 
-  $('tarikNominal').addEventListener('input', hitungSisaSaldoTarik);
+  $('tarikNominal').addEventListener('input', ()=>{
+    const el = $('tarikNominal');
+    const angka = el.value.replace(/\D/g,'');
+    el.value = angka ? angka.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '';
+    hitungSisaSaldoTarik();
+  });
 
   $('btnSimpanTarik').addEventListener('click', async ()=>{
-    if(!selectedAkun){ alert('Nasabah tidak ditemukan.'); return; }
+    if(!tarikSelectedAkun){ alert('Pilih pemilik rekening (nasabah) terlebih dahulu.'); $('tarikNasabahSearch').focus(); return; }
     if(!$('tarikTanggal').value){ alert('Tanggal wajib diisi.'); return; }
     if(!$('tarikJam').value){ alert('Jam wajib diisi.'); return; }
 
     const nominal = parseInt(($('tarikNominal').value||'').replace(/\D/g,''), 10) || 0;
     if(nominal <= 0){ alert('Nominal penarikan harus lebih dari Rp 0.'); $('tarikNominal').focus(); return; }
 
-    const saldoSaatIni = hitungSaldoNasabah(selectedAkun.id, null);
+    const saldoSaatIni = hitungSaldoNasabah(tarikSelectedAkun.id, null);
     const sisa = saldoSaatIni - nominal;
 
     if(sisa < SALDO_MINIMUM){
@@ -1942,7 +2000,7 @@
     // Untuk menyimpan tarik nominal, kita gunakan jenis_nama='TARIK TUNAI', berat_kg=1, harga_kg=nominal
     // sehingga total = berat_kg * harga_kg = 1 * nominal = nominal
     const payload = {
-      nasabah_id: selectedAkun.id,
+      nasabah_id: tarikSelectedAkun.id,
       tanggal: $('tarikTanggal').value,
       jam: $('tarikJam').value,
       jenis_nama: 'TARIK TUNAI',
@@ -1960,14 +2018,14 @@
         headers:{'Prefer':'return=representation'},
         body: JSON.stringify(payload)
       });
-      const barisBaru = baris2Transaksi(inserted[0], selectedAkun);
+      const barisBaru = baris2Transaksi(inserted[0], tarikSelectedAkun);
       transaksi.unshift(barisBaru);
       strukSementara.push(barisBaru);
       updateTombolCetakStruk();
       renderStats();
       renderLedger();
       closeModal('modalTarikSaldo');
-      showToast(`Penarikan ${rupiah(nominal)} untuk ${selectedAkun.nama} berhasil disimpan.`);
+      showToast(`Penarikan ${rupiah(nominal)} untuk ${tarikSelectedAkun.nama} berhasil disimpan.`);
     } catch(err){
       console.error('Gagal simpan tarik saldo:', err);
       alert('Terjadi kesalahan saat menyimpan penarikan. Silakan coba lagi.');
